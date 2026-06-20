@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Users, Utensils, Receipt, Wallet, TrendingUp, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Utensils, Receipt, Wallet, TrendingUp, Clock, FileBarChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -27,10 +30,19 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue }: any) => (
 );
 
 export function Dashboard() {
-  const { currentMess } = useAuth();
+  const { currentMess, user } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [monthName, setMonthName] = useState(() => {
+    const d = new Date();
+    return d.toLocaleString('default', { month: 'long', year: 'numeric' });
+  });
+  const [closingMonth, setClosingMonth] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -77,10 +89,40 @@ export function Dashboard() {
 
       allActivity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setActivities(allActivity.slice(0, 6));
+
+      // 4. Check if Admin
+      const { data: roleData } = await supabase.rpc('get_user_role', { 
+        p_mess_id: currentMess.id, 
+        p_user_id: user?.id 
+      });
+      setIsAdmin(roleData === 'owner' || roleData === 'manager');
     }
     
     fetchData();
-  }, [currentMess]);
+  }, [currentMess, user]);
+
+  const handleCloseMonth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentMess || !user) return;
+    setClosingMonth(true);
+    setCloseError(null);
+
+    const { error: dbError } = await supabase.rpc('close_month', {
+      p_mess_id: currentMess.id,
+      p_month_name: monthName
+    });
+
+    if (dbError) {
+      setCloseError(dbError.message);
+      setClosingMonth(false);
+    } else {
+      setShowCloseModal(false);
+      setClosingMonth(false);
+      setMonthName('');
+      // Force reload to clear everything from the UI
+      window.location.reload();
+    }
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -113,11 +155,19 @@ export function Dashboard() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-6"
+      className="space-y-6 relative"
     >
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground mt-1">Overview of your mess statistics for this month.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground mt-1">Overview of your mess statistics for this month.</p>
+        </div>
+        {isAdmin && (
+          <Button variant="destructive" className="shrink-0 gap-2" onClick={() => setShowCloseModal(true)}>
+            <FileBarChart className="w-4 h-4" />
+            Close Month
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -210,6 +260,56 @@ export function Dashboard() {
           </Card>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showCloseModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowCloseModal(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="z-50 w-full max-w-md"
+            >
+              <Card className="border-border/50 bg-card/95 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-destructive flex items-center gap-2">
+                    <FileBarChart className="w-5 h-5" />
+                    Close Current Month
+                  </CardTitle>
+                </CardHeader>
+                <form onSubmit={handleCloseMonth}>
+                  <CardContent className="space-y-4">
+                    {closeError && <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">{closeError}</div>}
+                    
+                    <p className="text-sm text-muted-foreground">
+                      Warning: This will archive all current meals, expenses, and deposits into a new Report, and reset the dashboard. Everyone's final balance will be carried over to the new month as a deposit.
+                    </p>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="monthName">Name of the Report</Label>
+                      <Input 
+                        id="monthName" 
+                        required 
+                        placeholder="e.g. June 2026" 
+                        value={monthName} 
+                        onChange={e => setMonthName(e.target.value)} 
+                        disabled={closingMonth} 
+                      />
+                    </div>
+                  </CardContent>
+                  <div className="p-6 pt-0 flex justify-between">
+                    <Button variant="ghost" type="button" onClick={() => setShowCloseModal(false)} disabled={closingMonth}>Cancel</Button>
+                    <Button variant="destructive" type="submit" disabled={closingMonth}>
+                      {closingMonth ? 'Closing...' : 'Confirm & Close Month'}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

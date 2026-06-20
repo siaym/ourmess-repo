@@ -9,6 +9,7 @@ import { Members } from './pages/Members';
 import { Meals } from './pages/Meals';
 import { Expenses } from './pages/Expenses';
 import { Deposits } from './pages/Deposits';
+import { Reports } from './pages/Reports';
 
 const Loading = () => <div className="flex h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/meals" element={<ProtectedRoute><Meals /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
           <Route path="/deposits" element={<ProtectedRoute><Deposits /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

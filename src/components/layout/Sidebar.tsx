@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Utensils, Receipt, Wallet, FileText, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Users, Utensils, Receipt, Wallet, FileText, Settings, LogOut, X, FileBarChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
@@ -14,7 +14,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
     { name: 'Meals', href: '/meals', icon: Utensils },
     { name: 'Expenses', href: '/expenses', icon: Receipt },
     { name: 'Deposits', href: '/deposits', icon: Wallet },
-    { name: 'Reports', href: '/reports', icon: FileText },
+    { name: 'Reports', href: '/reports', icon: FileBarChart },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
