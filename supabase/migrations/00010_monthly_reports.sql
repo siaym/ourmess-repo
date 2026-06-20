@@ -40,6 +40,7 @@ ALTER TABLE public.deposits ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT
 ALTER TABLE public.deposits DROP CONSTRAINT IF EXISTS deposits_amount_check;
 
 -- Update Views to exclude archived data
+DROP VIEW IF EXISTS public.member_balances CASCADE;
 CREATE OR REPLACE VIEW public.member_balances WITH (security_invoker = true) AS
 SELECT 
   mm.mess_id,
@@ -105,7 +106,7 @@ SELECT
   m.is_deleted
 FROM public.meals m
 JOIN public.users u ON u.id = m.member_id
-WHERE m.is_archived = FALSE;
+WHERE m.is_archived = FALSE AND m.is_deleted = FALSE;
 
 CREATE OR REPLACE VIEW public.expense_details WITH (security_invoker = true) AS
 SELECT 
@@ -121,7 +122,7 @@ SELECT
   e.is_deleted
 FROM public.expenses e
 JOIN public.users u ON u.id = e.created_by
-WHERE e.is_archived = FALSE;
+WHERE e.is_archived = FALSE AND e.is_deleted = FALSE;
 
 CREATE OR REPLACE VIEW public.deposit_details WITH (security_invoker = true) AS
 SELECT 
@@ -137,7 +138,7 @@ SELECT
   d.is_deleted
 FROM public.deposits d
 JOIN public.users u ON u.id = d.member_id
-WHERE d.is_archived = FALSE;
+WHERE d.is_archived = FALSE AND d.is_deleted = FALSE;
 
 
 -- RPC to close month
