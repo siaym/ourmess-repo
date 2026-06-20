@@ -4,6 +4,7 @@ import { Users, UserPlus, Search, MoreVertical, ShieldAlert, Trash2, Copy, Check
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -26,6 +27,10 @@ export function Members() {
   
   // Modals state
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [offlineName, setOfflineName] = useState('');
+  const [addingOffline, setAddingOffline] = useState(false);
+  const [offlineError, setOfflineError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -89,6 +94,28 @@ export function Members() {
   const myRole = members.find(m => m.member_id === user?.id)?.role || 'member';
   const isAdmin = myRole === 'owner' || myRole === 'manager';
 
+  const handleAddOfflineMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentMess || !offlineName.trim()) return;
+    setAddingOffline(true);
+    setOfflineError(null);
+
+    const { error: dbError } = await supabase.rpc('add_offline_member', {
+      p_mess_id: currentMess.id,
+      p_name: offlineName.trim()
+    });
+
+    if (dbError) {
+      setOfflineError(dbError.message);
+      setAddingOffline(false);
+    } else {
+      await fetchMembers();
+      setShowOfflineModal(false);
+      setAddingOffline(false);
+      setOfflineName('');
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -101,10 +128,16 @@ export function Members() {
           <p className="text-muted-foreground mt-1">Manage users and roles in your mess.</p>
         </div>
         {isAdmin && (
-          <Button className="shrink-0 gap-2" onClick={() => setShowInviteModal(true)}>
-            <UserPlus className="w-4 h-4" />
-            Add Member
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="shrink-0 gap-2" onClick={() => setShowOfflineModal(true)}>
+              <UserPlus className="w-4 h-4" />
+              Add Manually
+            </Button>
+            <Button className="shrink-0 gap-2" onClick={() => setShowInviteModal(true)}>
+              <UserPlus className="w-4 h-4" />
+              Invite Code
+            </Button>
+          </div>
         )}
       </div>
 
@@ -246,6 +279,46 @@ export function Members() {
                 <div className="p-6 pt-0 flex justify-end">
                   <Button onClick={() => setShowInviteModal(false)}>Done</Button>
                 </div>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showOfflineModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowOfflineModal(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="z-50 w-full max-w-sm"
+            >
+              <Card className="border-border/50 bg-card/95 shadow-2xl">
+                <CardHeader>
+                  <CardTitle>Add Offline Member</CardTitle>
+                </CardHeader>
+                <form onSubmit={handleAddOfflineMember}>
+                  <CardContent className="space-y-4">
+                    {offlineError && <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">{offlineError}</div>}
+                    <div className="space-y-2">
+                      <Label htmlFor="offlineName">Roommate Name</Label>
+                      <Input 
+                        id="offlineName" 
+                        required 
+                        placeholder="e.g. Rakib" 
+                        value={offlineName} 
+                        onChange={e => setOfflineName(e.target.value)} 
+                        disabled={addingOffline} 
+                      />
+                    </div>
+                  </CardContent>
+                  <div className="p-6 pt-0 flex justify-between">
+                    <Button variant="ghost" type="button" onClick={() => setShowOfflineModal(false)} disabled={addingOffline}>Cancel</Button>
+                    <Button type="submit" disabled={addingOffline}>{addingOffline ? 'Adding...' : 'Add Member'}</Button>
+                  </div>
+                </form>
               </Card>
             </motion.div>
           </div>
