@@ -294,64 +294,66 @@ export function SuperAdmin() {
                               {loadingMembers[mess.id] ? (
                                 <p className="text-sm text-muted-foreground py-4 text-center">Loading members...</p>
                               ) : (
-                                <table className="w-full text-sm text-left">
-                                  <thead className="text-xs text-muted-foreground uppercase border-b border-border/50">
-                                    <tr>
-                                      <th className="px-4 py-2 font-medium">Member Name</th>
-                                      <th className="px-4 py-2 font-medium">Email</th>
-                                      <th className="px-4 py-2 font-medium">Role</th>
-                                      <th className="px-4 py-2 font-medium text-right">Action</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-border/20">
-                                    {members[mess.id]?.map((member) => (
-                                      <tr key={member.member_id} className={`hover:bg-muted/30 ${member.is_deleted ? 'opacity-50' : ''}`}>
-                                        <td className="px-4 py-3">
-                                          <div className="font-medium">{member.user_name}</div>
-                                          {member.is_deleted && <span className="text-xs text-destructive">Left Mess</span>}
-                                        </td>
-                                        <td className="px-4 py-3 text-muted-foreground">
-                                          {member.user_email}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                          <span className="capitalize text-xs bg-muted px-2 py-1 rounded-md">
-                                            {member.role}
-                                          </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            className="text-primary hover:text-primary hover:bg-primary/10"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              sendPasswordReset(member.user_email, member.member_id);
-                                            }}
-                                            disabled={resetStatus?.id === member.member_id}
-                                          >
-                                            {resetStatus?.id === member.member_id ? (
-                                              resetStatus.status === 'sending' ? 'Sending...' :
-                                              resetStatus.status === 'success' ? <span className="text-success">{resetStatus.msg}</span> :
-                                              <span className="text-destructive">Failed</span>
-                                            ) : (
-                                              <>
-                                                <KeyRound className="w-3.5 h-3.5 mr-2" />
-                                                Reset Password
-                                              </>
-                                            )}
-                                          </Button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                    {members[mess.id]?.length === 0 && (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-sm text-left whitespace-nowrap">
+                                    <thead className="text-xs text-muted-foreground uppercase border-b border-border/50">
                                       <tr>
-                                        <td colSpan={4} className="px-4 py-4 text-center text-muted-foreground">
-                                          No members found.
-                                        </td>
+                                        <th className="px-4 py-2 font-medium">Member Name</th>
+                                        <th className="px-4 py-2 font-medium">Email</th>
+                                        <th className="px-4 py-2 font-medium">Role</th>
+                                        <th className="px-4 py-2 font-medium text-right">Action</th>
                                       </tr>
-                                    )}
-                                  </tbody>
-                                </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/20">
+                                      {members[mess.id]?.map((member) => (
+                                        <tr key={member.member_id} className={`hover:bg-muted/30 ${member.is_deleted ? 'opacity-50' : ''}`}>
+                                          <td className="px-4 py-3">
+                                            <div className="font-medium">{member.user_name}</div>
+                                            {member.is_deleted && <span className="text-xs text-destructive">Left Mess</span>}
+                                          </td>
+                                          <td className="px-4 py-3 text-muted-foreground">
+                                            {member.user_email}
+                                          </td>
+                                          <td className="px-4 py-3">
+                                            <span className="capitalize text-xs bg-muted px-2 py-1 rounded-md">
+                                              {member.role}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-3 text-right">
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              className="text-primary hover:text-primary hover:bg-primary/10"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                sendPasswordReset(member.user_email, member.member_id);
+                                              }}
+                                              disabled={resetStatus?.id === member.member_id}
+                                            >
+                                              {resetStatus?.id === member.member_id ? (
+                                                resetStatus.status === 'sending' ? 'Sending...' :
+                                                resetStatus.status === 'success' ? <span className="text-success">{resetStatus.msg}</span> :
+                                                <span className="text-destructive">Failed</span>
+                                              ) : (
+                                                <>
+                                                  <KeyRound className="w-3.5 h-3.5 mr-2" />
+                                                  Reset Password
+                                                </>
+                                              )}
+                                            </Button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                      {members[mess.id]?.length === 0 && (
+                                        <tr>
+                                          <td colSpan={4} className="px-4 py-4 text-center text-muted-foreground">
+                                            No members found.
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
                               )}
                             </div>
                           </motion.div>
