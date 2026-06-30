@@ -32,6 +32,8 @@ export function Settings() {
   const [sendingDues, setSendingDues] = useState(false);
   const [duesSuccess, setDuesSuccess] = useState('');
   
+  const mailEnabled = currentMess?.mail_service_enabled ?? true;
+
   useEffect(() => {
     async function fetchData() {
       if (!currentMess) return;
@@ -86,23 +88,25 @@ export function Settings() {
       const { error: dbError } = await supabase.from('notifications').insert(notifications);
       if (dbError) throw dbError;
 
-      const { sendEmailNotification } = await import('../lib/emailService');
-      for (const m of targetMembers) {
-        if (m.email) {
-          try {
-            await sendEmailNotification({
-              to_email: m.email,
-              to_name: m.name || 'Member',
-              subject: `Announcement: ${title}`,
-              message: `${message}\n\n- Sent from MessFlow System`
-            });
-          } catch (emailErr) {
-            console.error("Failed to send email to", m.email, emailErr);
+      if (mailEnabled) {
+        const { sendEmailNotification } = await import('../lib/emailService');
+        for (const m of targetMembers) {
+          if (m.email) {
+            try {
+              await sendEmailNotification({
+                to_email: m.email,
+                to_name: m.name || 'Member',
+                subject: `Announcement: ${title}`,
+                message: `${message}\n\n- Sent from MessFlow System`
+              });
+            } catch (emailErr) {
+              console.error("Failed to send email to", m.email, emailErr);
+            }
           }
         }
       }
 
-      setSuccess(targetUser === 'ALL' ? 'Announcement and emails sent to all members!' : 'Message and email sent successfully!');
+      setSuccess(targetUser === 'ALL' ? 'Announcement sent to all members!' : 'Message sent successfully!');
       setTitle('');
       setMessage('');
       setTargetUser('ALL');
@@ -141,7 +145,7 @@ export function Settings() {
         });
 
         // 2. Send Email
-        if (m.email) {
+        if (m.email && mailEnabled) {
           await sendEmailNotification({
             to_email: m.email,
             to_name: m.name || 'Member',

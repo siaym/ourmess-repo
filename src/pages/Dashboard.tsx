@@ -143,7 +143,8 @@ export function Dashboard() {
             });
 
             // 2. Send Email if they are in Minus (Due)
-            if (isDue && member.users?.email) {
+            const mailEnabled = currentMess.mail_service_enabled ?? true;
+            if (isDue && member.users?.email && mailEnabled) {
               await sendEmailNotification({
                 to_email: member.users.email,
                 to_name: member.users.name || 'Member',

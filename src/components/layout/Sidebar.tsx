@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Utensils, Receipt, Wallet, FileText, Settings, LogOut, X, FileBarChart } from 'lucide-react';
+import { LayoutDashboard, Users, Utensils, Receipt, Wallet, FileText, Settings, LogOut, X, FileBarChart, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
   const { pathname } = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, systemRole } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -17,6 +17,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
     { name: 'Reports', href: '/reports', icon: FileBarChart },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  if (systemRole === 'super_admin') {
+    navigation.push({ name: 'Super Admin', href: '/admin', icon: ShieldAlert });
+  }
 
   return (
     <>

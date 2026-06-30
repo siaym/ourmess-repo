@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   currentMess: any | null;
+  systemRole: string;
   loading: boolean;
   loadingMess: boolean;
   refreshMess: () => Promise<void>;
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   currentMess: null,
+  systemRole: 'user',
   loading: true,
   loadingMess: true,
   refreshMess: async () => {},
@@ -25,12 +27,25 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [systemRole, setSystemRole] = useState<string>('user');
   const [currentMess, setCurrentMess] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMess, setLoadingMess] = useState(true);
 
-  const fetchMess = async (userId: string) => {
+  const fetchMessAndRole = async (userId: string) => {
     setLoadingMess(true);
+    
+    // Fetch system role
+    const { data: userData } = await supabase
+      .from('users')
+      .select('system_role')
+      .eq('id', userId)
+      .single();
+    if (userData) {
+      setSystemRole(userData.system_role || 'user');
+    }
+
+    // Fetch mess
     const { data: memberData } = await supabase
       .from('mess_members')
       .select('mess_id')
@@ -59,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
-        fetchMess(session.user.id);
+        fetchMessAndRole(session.user.id);
       } else {
         setLoadingMess(false);
       }
@@ -71,9 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
-        fetchMess(session.user.id);
+        fetchMessAndRole(session.user.id);
       } else {
         setCurrentMess(null);
+        setSystemRole('user');
         setLoadingMess(false);
       }
     });
@@ -83,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshMess = async () => {
     if (user) {
-      await fetchMess(user.id);
+      await fetchMessAndRole(user.id);
     }
   };
 
@@ -92,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, currentMess, loading, loadingMess, refreshMess, signOut }}>
+    <AuthContext.Provider value={{ user, session, currentMess, systemRole, loading, loadingMess, refreshMess, signOut }}>
       {children}
     </AuthContext.Provider>
   );
