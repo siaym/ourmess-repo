@@ -8,19 +8,26 @@ import { Label } from '../components/ui/label';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+interface MemberOption {
+  user_id: string;
+  name: string;
+}
+
 export function Settings() {
   const { currentMess } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [members, setMembers] = useState<MemberOption[]>([]);
   
   // Announcement state
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [targetUser, setTargetUser] = useState('ALL');
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    async function checkRole() {
+    async function fetchData() {
       if (!currentMess) return;
       const { data: { user } } = await supabase.auth.getUser();
       const { data: roleData } = await supabase.rpc('get_user_role', { 
@@ -28,8 +35,20 @@ export function Settings() {
         p_user_id: user?.id 
       });
       setIsAdmin(roleData === 'owner' || roleData === 'manager');
+
+      if (roleData === 'owner' || roleData === 'manager') {
+        // Fetch members for dropdown
+        const { data: memberData } = await supabase
+          .from('member_balances')
+          .select('member_id, name')
+          .eq('mess_id', currentMess.id);
+        
+        if (memberData) {
+          setMembers(memberData.map((m: any) => ({ user_id: m.member_id, name: m.name })));
+        }
+      }
     }
-    checkRole();
+    fetchData();
   }, [currentMess]);
 
   const handleSendAnnouncement = async (e: React.FormEvent) => {
@@ -39,21 +58,33 @@ export function Settings() {
     setError('');
     setSuccess('');
 
-    const { error: dbError } = await supabase.rpc('broadcast_notification', {
-      p_mess_id: currentMess.id,
-      p_title: title,
-      p_message: message,
-      p_type: 'announcement'
-    });
+    try {
+      let targets = members.map(m => m.user_id);
+      if (targetUser !== 'ALL') {
+        targets = [targetUser];
+      }
 
-    if (dbError) {
-      setError(dbError.message);
-    } else {
-      setSuccess('Announcement sent to all members!');
+      const notifications = targets.map(userId => ({
+        mess_id: currentMess.id,
+        user_id: userId,
+        title: title,
+        message: message,
+        type: 'announcement'
+      }));
+
+      const { error: dbError } = await supabase.from('notifications').insert(notifications);
+
+      if (dbError) throw dbError;
+
+      setSuccess(targetUser === 'ALL' ? 'Announcement sent to all members!' : 'Message sent successfully!');
       setTitle('');
       setMessage('');
+      setTargetUser('ALL');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send message.');
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   return (
@@ -72,21 +103,38 @@ export function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-primary" />
-              Send Announcement
+              Send Message
             </CardTitle>
             <CardDescription>
-              Send an in-app notification to every member of the mess.
+              Send an in-app notification to a specific member or everyone in the mess.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSendAnnouncement} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="target">Send To</Label>
+                <select 
+                  id="target" 
+                  value={targetUser} 
+                  onChange={e => setTargetUser(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="ALL" className="bg-background">Everyone (All Members)</option>
+                  {members.map(m => (
+                    <option key={m.user_id} value={m.user_id} className="bg-background">
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input 
                   id="title" 
                   value={title} 
                   onChange={e => setTitle(e.target.value)} 
-                  placeholder="e.g. Important Update"
+                  placeholder="e.g. Important Update or Dues Reminder"
                   required 
                 />
               </div>
@@ -107,7 +155,7 @@ export function Settings() {
               
               <Button type="submit" disabled={sending} className="w-full sm:w-auto gap-2">
                 <Send className="w-4 h-4" />
-                {sending ? 'Sending...' : 'Send to All Members'}
+                {sending ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </CardContent>
