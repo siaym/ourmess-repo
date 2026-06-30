@@ -1,5 +1,9 @@
+-- Drop old tables if they exist from initial schema
+DROP TABLE IF EXISTS public.monthly_report_members CASCADE;
+DROP TABLE IF EXISTS public.monthly_reports CASCADE;
+
 -- Create Monthly Reports tables
-CREATE TABLE IF NOT EXISTS public.monthly_reports (
+CREATE TABLE public.monthly_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   mess_id UUID NOT NULL REFERENCES public.messes(id) ON DELETE CASCADE,
   month_name TEXT NOT NULL,
@@ -10,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.monthly_reports (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS public.monthly_report_members (
+CREATE TABLE public.monthly_report_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   report_id UUID NOT NULL REFERENCES public.monthly_reports(id) ON DELETE CASCADE,
   member_id UUID NOT NULL REFERENCES public.users(id),
