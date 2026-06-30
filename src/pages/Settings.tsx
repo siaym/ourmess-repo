@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 interface MemberOption {
   user_id: string;
   name: string;
+  email: string;
 }
 
 export function Settings() {
@@ -40,11 +41,11 @@ export function Settings() {
         // Fetch members for dropdown
         const { data: memberData } = await supabase
           .from('member_balances')
-          .select('member_id, name')
+          .select('member_id, name, email')
           .eq('mess_id', currentMess.id);
         
         if (memberData) {
-          setMembers(memberData.map((m: any) => ({ user_id: m.member_id, name: m.name })));
+          setMembers(memberData.map((m: any) => ({ user_id: m.member_id, name: m.name, email: m.email })));
         }
       }
     }
@@ -59,24 +60,41 @@ export function Settings() {
     setSuccess('');
 
     try {
-      let targets = members.map(m => m.user_id);
+      let targetMembers = members;
       if (targetUser !== 'ALL') {
-        targets = [targetUser];
+        targetMembers = members.filter(m => m.user_id === targetUser);
       }
 
-      const notifications = targets.map(userId => ({
+      const notifications = targetMembers.map(m => ({
         mess_id: currentMess.id,
-        user_id: userId,
+        user_id: m.user_id,
         title: title,
         message: message,
         type: 'announcement'
       }));
 
+      // 1. Insert In-App Notifications
       const { error: dbError } = await supabase.from('notifications').insert(notifications);
-
       if (dbError) throw dbError;
 
-      setSuccess(targetUser === 'ALL' ? 'Announcement sent to all members!' : 'Message sent successfully!');
+      // 2. Send Emails
+      const { sendEmailNotification } = await import('../lib/emailService');
+      for (const m of targetMembers) {
+        if (m.email) {
+          try {
+            await sendEmailNotification({
+              to_email: m.email,
+              to_name: m.name || 'Member',
+              subject: `Announcement: ${title}`,
+              message: `${message}\n\n- Sent from MessFlow System`
+            });
+          } catch (emailErr) {
+            console.error("Failed to send email to", m.email, emailErr);
+          }
+        }
+      }
+
+      setSuccess(targetUser === 'ALL' ? 'Announcement and emails sent to all members!' : 'Message and email sent successfully!');
       setTitle('');
       setMessage('');
       setTargetUser('ALL');
