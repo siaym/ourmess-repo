@@ -52,7 +52,7 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) return <Navigate to="/login" />;
   if (systemRole !== 'super_admin') return <Navigate to="/" />;
   
-  return <AppLayout>{children}</AppLayout>;
+  return <>{children}</>;
 };
 
 function App() {

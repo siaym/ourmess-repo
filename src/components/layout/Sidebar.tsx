@@ -18,10 +18,6 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
-  if (systemRole === 'super_admin') {
-    navigation.push({ name: 'Super Admin', href: '/admin', icon: ShieldAlert });
-  }
-
   return (
     <>
       {/* Mobile Backdrop */}
