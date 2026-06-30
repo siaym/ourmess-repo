@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           </div>
           <p style="font-size: 0.9em; color: #666; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
             This is an automated message from the OurMess System.<br/>
-            Please do not reply to this email.
+            If you have any queries or questions, please mail to <a href="mailto:siyam.diucse@gmail.com" style="color: #2563eb; text-decoration: none;">siyam.diucse@gmail.com</a>.
           </p>
         </div>
       `,
