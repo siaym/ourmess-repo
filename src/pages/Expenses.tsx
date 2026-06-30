@@ -90,6 +90,13 @@ export function Expenses() {
     setSaving(true);
     setError(null);
 
+    // 1. Fetch balances BEFORE the change
+    const { data: oldBalances } = await supabase
+      .from('member_balances')
+      .select('mess_id, member_id, name, email, balance')
+      .eq('mess_id', currentMess.id);
+
+    // 2. Perform the save
     const { error: dbError } = await supabase.from('expenses').insert({
       mess_id: currentMess.id,
       title,
@@ -103,6 +110,20 @@ export function Expenses() {
       setError(dbError.message);
       setSaving(false);
     } else {
+      // 3. Fetch balances AFTER the change
+      const { data: newBalances } = await supabase
+        .from('member_balances')
+        .select('mess_id, member_id, name, email, balance')
+        .eq('mess_id', currentMess.id);
+
+      // 4. Notify anyone who crossed into negative
+      try {
+        const { notifyIfCrossedToNegative } = await import('../lib/balanceNotifier');
+        await notifyIfCrossedToNegative(currentMess.id, oldBalances || [], newBalances || []);
+      } catch (err) {
+        console.error("Failed to notify balances", err);
+      }
+
       await fetchData();
       setShowModal(false);
       setSaving(false);

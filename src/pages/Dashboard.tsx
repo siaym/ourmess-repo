@@ -107,7 +107,7 @@ export function Dashboard() {
     setClosingMonth(true);
     setCloseError(null);
 
-    const { error: dbError } = await supabase.rpc('close_month', {
+    const { data: reportId, error: dbError } = await supabase.rpc('close_month', {
       p_mess_id: currentMess.id,
       p_month_name: monthName
     });
@@ -115,7 +115,48 @@ export function Dashboard() {
     if (dbError) {
       setCloseError(dbError.message);
       setClosingMonth(false);
-    } else {
+    } else if (reportId) {
+      // Month closed successfully! Fetch members to send summary emails
+      try {
+        const { data: reportMembers } = await supabase
+          .from('monthly_report_members')
+          .select('*, users(name, email)')
+          .eq('report_id', reportId);
+
+        if (reportMembers) {
+          // Import email service dynamically to avoid top-level issues if not needed elsewhere
+          const { sendEmailNotification } = await import('../lib/emailService');
+          
+          for (const member of reportMembers) {
+            const isDue = member.balance < 0;
+            const balanceText = isDue 
+              ? `Due: ৳${Math.abs(member.balance).toFixed(2)}` 
+              : `Advance: ৳${member.balance.toFixed(2)}`;
+
+            // 1. Insert In-App Notification (System Alert)
+            await supabase.from('notifications').insert({
+              mess_id: currentMess.id,
+              user_id: member.member_id,
+              title: `Month Closed: ${monthName}`,
+              message: `The month has been closed. Your final balance is ${balanceText}.`,
+              type: isDue ? 'alert' : 'system'
+            });
+
+            // 2. Send Email if they are in Minus (Due)
+            if (isDue && member.users?.email) {
+              await sendEmailNotification({
+                to_email: member.users.email,
+                to_name: member.users.name || 'Member',
+                subject: `Action Required: Due Balance for ${monthName}`,
+                message: `Hello ${member.users.name || 'Member'},\n\nThe month of ${monthName} has been officially closed by the mess manager.\n\nYour final balance is negative (${balanceText}).\nPlease clear your dues as soon as possible to keep the mess fund healthy.\n\nThank you,\nMessFlow System`
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to send month-close notifications", err);
+      }
+
       setShowCloseModal(false);
       setClosingMonth(false);
       setMonthName('');

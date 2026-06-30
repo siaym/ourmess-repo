@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
+import { NotificationsDropdown } from './NotificationsDropdown';
 import { useAuth } from '../../contexts/AuthContext';
 import { Menu } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -24,6 +25,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate sm:hidden">MessFlow</h1>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationsDropdown />
             <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
               {user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
