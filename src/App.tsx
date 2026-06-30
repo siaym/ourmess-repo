@@ -46,9 +46,9 @@ const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, systemRole, loading } = useAuth();
+  const { user, systemRole, loading, loadingMess } = useAuth();
   
-  if (loading) return <Loading />;
+  if (loading || loadingMess) return <Loading />;
   if (!user) return <Navigate to="/login" />;
   if (systemRole !== 'super_admin') return <Navigate to="/" />;
   
