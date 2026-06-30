@@ -146,7 +146,7 @@ export function Settings() {
             to_email: m.email,
             to_name: m.name || 'Member',
             subject: 'Action Required: Dues Reminder',
-            message: `Hello ${m.name || 'Member'},\n\nThis is a manual reminder from your mess manager.\n\nYou currently have a negative balance and owe exactly ৳${dueAmount}.\nPlease make a deposit to the mess fund as soon as possible to clear your dues.\n\nThank you!`
+            message: `Hello ${m.name || 'Member'},\n\nThis is a manual reminder from your mess admin(siyam).\n\nYou currently have a negative balance and owe exactly ৳${dueAmount}.\nPlease make a deposit to the mess fund as soon as possible to clear your dues.\n\nThank you!`
           });
         }
       }
