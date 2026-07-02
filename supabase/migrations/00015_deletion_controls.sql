@@ -47,17 +47,31 @@ BEGIN
     RAISE EXCEPTION 'Access Denied: Super Admin Only';
   END IF;
 
+  -- Nullify their metadata footprints in other people's records
+  UPDATE public.meals SET created_by = NULL WHERE created_by = p_user_id;
+  UPDATE public.meals SET deleted_by = NULL WHERE deleted_by = p_user_id;
+  UPDATE public.expenses SET created_by = NULL WHERE created_by = p_user_id;
+  UPDATE public.expenses SET deleted_by = NULL WHERE deleted_by = p_user_id;
+  UPDATE public.deposits SET created_by = NULL WHERE created_by = p_user_id;
+  UPDATE public.deposits SET deleted_by = NULL WHERE deleted_by = p_user_id;
+  UPDATE public.messes SET deleted_by = NULL WHERE deleted_by = p_user_id;
+  UPDATE public.mess_members SET deleted_by = NULL WHERE deleted_by = p_user_id;
+
+  -- Delete any messes they own (which cascades)
+  DELETE FROM public.messes WHERE owner_id = p_user_id;
+
   -- Delete from member_bills (new feature)
   DELETE FROM public.member_bills WHERE member_id = p_user_id;
   
-  -- Delete all their financial history so it doesn't violate foreign keys
+  -- Delete all their personal financial history
   DELETE FROM public.meals WHERE member_id = p_user_id;
   DELETE FROM public.deposits WHERE member_id = p_user_id;
   
-  -- If they created any expenses or reports, we can't easily delete those without removing the mess expense.
-  -- But usually we just delete the user if they are a mistake.
-  -- Let's remove them from messes
+  -- Remove them from messes
   DELETE FROM public.mess_members WHERE user_id = p_user_id;
+  
+  -- Delete notifications
+  DELETE FROM public.notifications WHERE user_id = p_user_id;
   
   -- Finally, wipe their public profile
   DELETE FROM public.users WHERE id = p_user_id;
