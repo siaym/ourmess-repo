@@ -12,6 +12,7 @@ import { Deposits } from './pages/Deposits';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { SuperAdmin } from './pages/SuperAdmin';
+import { Bills } from './pages/Bills';
 
 const Loading = () => <div className="flex h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
 
@@ -70,6 +71,7 @@ function App() {
           <Route path="/deposits" element={<ProtectedRoute><Deposits /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/bills" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
           <Route path="/admin" element={<SuperAdminRoute><SuperAdmin /></SuperAdminRoute>} />
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" />} />
