@@ -47,16 +47,15 @@ export function Bills() {
     try {
       // Fetch members
       const { data: mems, error: memsErr } = await supabase
-        .from('mess_members')
-        .select('user_id, users(name, email)')
-        .eq('mess_id', currentMess.id)
-        .eq('is_deleted', false);
+        .from('member_balances')
+        .select('*')
+        .eq('mess_id', currentMess.id);
       if (memsErr) throw memsErr;
 
       setMembers(mems.map((m: any) => ({
-        id: m.user_id,
-        name: m.users.name,
-        email: m.users.email
+        id: m.member_id,
+        name: m.user_name,
+        email: m.user_email
       })));
 
       // Fetch bills & categories

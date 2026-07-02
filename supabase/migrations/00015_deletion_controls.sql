@@ -47,9 +47,19 @@ BEGIN
     RAISE EXCEPTION 'Access Denied: Super Admin Only';
   END IF;
 
-  -- Remove them from all messes first
-  UPDATE public.mess_members SET is_deleted = true, deleted_at = now() WHERE user_id = p_user_id;
-  -- Wipe their public profile
+  -- Delete from member_bills (new feature)
+  DELETE FROM public.member_bills WHERE member_id = p_user_id;
+  
+  -- Delete all their financial history so it doesn't violate foreign keys
+  DELETE FROM public.meals WHERE member_id = p_user_id;
+  DELETE FROM public.deposits WHERE member_id = p_user_id;
+  
+  -- If they created any expenses or reports, we can't easily delete those without removing the mess expense.
+  -- But usually we just delete the user if they are a mistake.
+  -- Let's remove them from messes
+  DELETE FROM public.mess_members WHERE user_id = p_user_id;
+  
+  -- Finally, wipe their public profile
   DELETE FROM public.users WHERE id = p_user_id;
 END;
 $$;
