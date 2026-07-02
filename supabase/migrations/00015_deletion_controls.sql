@@ -75,6 +75,9 @@ BEGIN
   
   -- Finally, wipe their public profile
   DELETE FROM public.users WHERE id = p_user_id;
+  
+  -- And wipe their core authentication identity so they can register again
+  DELETE FROM auth.users WHERE id = p_user_id;
 END;
 $$;
 
