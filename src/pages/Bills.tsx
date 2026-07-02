@@ -45,20 +45,7 @@ export function Bills() {
     if (!currentMess) return;
     setLoading(true);
     try {
-      // Fetch members
-      const { data: mems, error: memsErr } = await supabase
-        .from('member_balances')
-        .select('*')
-        .eq('mess_id', currentMess.id);
-      if (memsErr) throw memsErr;
-
-      setMembers(mems.map((m: any) => ({
-        id: m.member_id,
-        name: m.user_name,
-        email: m.user_email
-      })));
-
-      // Fetch bills & categories
+      // Fetch bills, categories, and members securely in one RPC call
       const { data: billsData, error: billsErr } = await supabase.rpc('get_bills_data', {
         p_mess_id: currentMess.id,
         p_month_year: monthYear
@@ -67,6 +54,7 @@ export function Bills() {
 
       setCategories(billsData.categories || []);
       setMemberBills(billsData.member_bills || []);
+      setMembers(billsData.members || []);
 
     } catch (error: any) {
       console.error('Error fetching bills:', error);

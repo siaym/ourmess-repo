@@ -67,6 +67,7 @@ AS $$
 DECLARE
   v_categories json;
   v_member_bills json;
+  v_members json;
 BEGIN
   -- Get all categories for this mess
   SELECT json_agg(c) INTO v_categories FROM (
@@ -80,9 +81,18 @@ BEGIN
     WHERE mess_id = p_mess_id AND month_year = p_month_year
   ) mb;
 
+  -- Get all members securely
+  SELECT json_agg(m) INTO v_members FROM (
+    SELECT mm.user_id as id, u.name, u.email 
+    FROM public.mess_members mm
+    JOIN public.users u ON u.id = mm.user_id
+    WHERE mm.mess_id = p_mess_id AND mm.is_deleted = false
+  ) m;
+
   RETURN json_build_object(
     'categories', COALESCE(v_categories, '[]'::json),
-    'member_bills', COALESCE(v_member_bills, '[]'::json)
+    'member_bills', COALESCE(v_member_bills, '[]'::json),
+    'members', COALESCE(v_members, '[]'::json)
   );
 END;
 $$;
