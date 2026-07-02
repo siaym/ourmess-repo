@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, Ban, Mail, Users, KeyRound, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
+import { ShieldAlert, Ban, Mail, Users, KeyRound, ChevronDown, ChevronUp, LogOut, Trash2, UserX, Crown, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { supabase } from '../lib/supabase';
@@ -29,11 +29,19 @@ interface MessMemberData {
   is_deleted: boolean;
 }
 
+interface GlobalStats {
+  total_messes: number;
+  total_users: number;
+  total_meals: number;
+  total_expenses: number;
+}
+
 export function SuperAdmin() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'controls' | 'users'>('controls');
   const [messes, setMesses] = useState<MessAdminData[]>([]);
+  const [stats, setStats] = useState<GlobalStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -43,21 +51,24 @@ export function SuperAdmin() {
   const [loadingMembers, setLoadingMembers] = useState<Record<string, boolean>>({});
   const [resetStatus, setResetStatus] = useState<{id: string, status: 'sending' | 'success' | 'error', msg?: string} | null>(null);
 
-  const fetchMesses = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_all_messes_admin');
-      if (error) throw error;
-      setMesses(data || []);
+      const { data: messData, error: messErr } = await supabase.rpc('get_all_messes_admin');
+      if (messErr) throw messErr;
+      setMesses(messData || []);
+
+      const { data: statsData } = await supabase.rpc('get_global_statistics');
+      if (statsData) setStats(statsData as GlobalStats);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch messes');
+      setError(err.message || 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMesses();
+    fetchData();
   }, []);
 
   const handleToggle = async (messId: string, field: 'is_banned' | 'mail_service_enabled', currentValue: boolean) => {
@@ -119,6 +130,62 @@ export function SuperAdmin() {
     }
   };
 
+  const handleDeleteMess = async (messId: string, messName: string) => {
+    const confirmed = window.confirm(`DANGER: Are you absolutely sure you want to PERMANENTLY delete the mess "${messName}"?\n\nThis will wipe all their meals, expenses, and deposits!`);
+    if (!confirmed) return;
+    
+    try {
+      const { error } = await supabase.rpc('delete_mess_admin', { p_mess_id: messId });
+      if (error) throw error;
+      setMesses(prev => prev.filter(m => m.id !== messId));
+      if (stats) setStats(prev => prev ? { ...prev, total_messes: prev.total_messes - 1 } : null);
+      alert("Mess deleted successfully.");
+    } catch (err: any) {
+      alert("Failed to delete mess: " + err.message);
+    }
+  };
+
+  const handleRemoveUser = async (messId: string, userId: string, userName: string) => {
+    const confirmed = window.confirm(`Remove ${userName} from this mess?`);
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.rpc('remove_user_from_mess_admin', { p_mess_id: messId, p_user_id: userId });
+      if (error) throw error;
+      setMembers(prev => ({
+        ...prev,
+        [messId]: prev[messId].map(m => m.member_id === userId ? { ...m, is_deleted: true } : m)
+      }));
+    } catch (err: any) {
+      alert("Failed to remove user: " + err.message);
+    }
+  };
+
+  const handleDeleteAccount = async (userId: string, userName: string) => {
+    const confirmed = window.confirm(`DANGER: Delete user ${userName} completely from the database?`);
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.rpc('delete_user_admin', { p_user_id: userId });
+      if (error) throw error;
+      alert("User account deleted.");
+      window.location.reload();
+    } catch (err: any) {
+      alert("Failed to delete user account: " + err.message);
+    }
+  };
+
+  const handleMakeOwner = async (messId: string, memberId: string, memberName: string) => {
+    const confirmed = window.confirm(`Make ${memberName} the new owner of this mess?`);
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.rpc('transfer_mess_ownership', { p_mess_id: messId, p_new_owner_id: memberId });
+      if (error) throw error;
+      alert("Ownership transferred.");
+      fetchData(); // Refresh to show new owner
+    } catch (err: any) {
+      alert("Failed to transfer ownership: " + err.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Background ambient glow */}
@@ -148,6 +215,40 @@ export function SuperAdmin() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-7xl mx-auto space-y-8"
         >
+          {/* Global Statistics */}
+          {stats && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <Activity className="w-6 h-6 text-primary mb-2" />
+                  <p className="text-2xl font-bold">{stats.total_messes}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Messes</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <Users className="w-6 h-6 text-primary mb-2" />
+                  <p className="text-2xl font-bold">{stats.total_users}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Users</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="text-2xl font-bold mb-2 text-primary">🍽️</div>
+                  <p className="text-2xl font-bold">{stats.total_meals}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Meals Logged</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="text-2xl font-bold mb-2 text-primary">৳</div>
+                  <p className="text-2xl font-bold">{Number(stats.total_expenses).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Expenses</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="flex space-x-2 p-1 bg-muted/50 rounded-lg w-fit mx-auto border border-border">
             <button
@@ -184,7 +285,7 @@ export function SuperAdmin() {
               <CardHeader>
                 <CardTitle>Platform Controls</CardTitle>
                 <CardDescription>
-                  Ban abusive messes or disable email services globally.
+                  Ban abusive messes, disable email services, or permanently delete messes globally.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -199,7 +300,8 @@ export function SuperAdmin() {
                           <th className="px-4 py-3">Owner</th>
                           <th className="px-4 py-3 text-center">Members</th>
                           <th className="px-4 py-3 text-center">Email Service</th>
-                          <th className="px-4 py-3 text-center rounded-tr-lg">Status (Ban)</th>
+                          <th className="px-4 py-3 text-center">Status</th>
+                          <th className="px-4 py-3 text-right rounded-tr-lg">Danger Zone</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/50">
@@ -240,6 +342,16 @@ export function SuperAdmin() {
                                 {mess.is_banned ? 'BANNED' : 'Active'}
                               </Button>
                             </td>
+                            <td className="px-4 py-4 text-right">
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => handleDeleteMess(mess.id, mess.name)}
+                                className="bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border-transparent"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -255,7 +367,7 @@ export function SuperAdmin() {
             <div className="space-y-4">
               <div className="mb-6">
                 <h3 className="text-2xl font-semibold">Mess Directory</h3>
-                <p className="text-muted-foreground">Expand a mess to manage its users and reset passwords.</p>
+                <p className="text-muted-foreground">Expand a mess to manage its users, reset passwords, or delete accounts.</p>
               </div>
               
               {loading ? (
@@ -301,7 +413,7 @@ export function SuperAdmin() {
                                         <th className="px-4 py-2 font-medium">Member Name</th>
                                         <th className="px-4 py-2 font-medium">Email</th>
                                         <th className="px-4 py-2 font-medium">Role</th>
-                                        <th className="px-4 py-2 font-medium text-right">Action</th>
+                                        <th className="px-4 py-2 font-medium text-right">Actions</th>
                                       </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border/20">
@@ -315,32 +427,64 @@ export function SuperAdmin() {
                                             {member.user_email}
                                           </td>
                                           <td className="px-4 py-3">
-                                            <span className="capitalize text-xs bg-muted px-2 py-1 rounded-md">
-                                              {member.role}
+                                            <span className={`capitalize text-xs px-2 py-1 rounded-md ${member.member_id === mess.owner_id ? 'bg-primary/20 text-primary font-bold' : 'bg-muted'}`}>
+                                              {member.member_id === mess.owner_id ? 'Owner' : member.role}
                                             </span>
                                           </td>
                                           <td className="px-4 py-3 text-right">
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm"
-                                              className="text-primary hover:text-primary hover:bg-primary/10"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                sendPasswordReset(member.user_email, member.member_id);
-                                              }}
-                                              disabled={resetStatus?.id === member.member_id}
-                                            >
-                                              {resetStatus?.id === member.member_id ? (
-                                                resetStatus.status === 'sending' ? 'Sending...' :
-                                                resetStatus.status === 'success' ? <span className="text-success">{resetStatus.msg}</span> :
-                                                <span className="text-destructive">Failed</span>
-                                              ) : (
-                                                <>
-                                                  <KeyRound className="w-3.5 h-3.5 mr-2" />
-                                                  Reset Password
-                                                </>
+                                            <div className="flex items-center justify-end gap-2">
+                                              {member.member_id !== mess.owner_id && !member.is_deleted && (
+                                                <Button 
+                                                  variant="outline" 
+                                                  size="sm"
+                                                  title="Make Owner"
+                                                  className="hover:text-primary hover:border-primary"
+                                                  onClick={(e) => { e.stopPropagation(); handleMakeOwner(mess.id, member.member_id, member.user_name); }}
+                                                >
+                                                  <Crown className="w-3.5 h-3.5" />
+                                                </Button>
                                               )}
-                                            </Button>
+                                              
+                                              {!member.is_deleted && (
+                                                <Button 
+                                                  variant="outline" 
+                                                  size="sm"
+                                                  title="Remove from Mess"
+                                                  className="hover:text-destructive hover:border-destructive"
+                                                  onClick={(e) => { e.stopPropagation(); handleRemoveUser(mess.id, member.member_id, member.user_name); }}
+                                                >
+                                                  <UserX className="w-3.5 h-3.5" />
+                                                </Button>
+                                              )}
+
+                                              <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="text-primary hover:text-primary hover:bg-primary/10"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  sendPasswordReset(member.user_email, member.member_id);
+                                                }}
+                                                disabled={resetStatus?.id === member.member_id}
+                                              >
+                                                {resetStatus?.id === member.member_id ? (
+                                                  resetStatus.status === 'sending' ? '...' :
+                                                  resetStatus.status === 'success' ? <span className="text-success">Sent!</span> :
+                                                  <span className="text-destructive">Fail</span>
+                                                ) : (
+                                                  <KeyRound className="w-3.5 h-3.5" />
+                                                )}
+                                              </Button>
+
+                                              <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                title="Delete Account Globally"
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteAccount(member.member_id, member.user_name); }}
+                                              >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                              </Button>
+                                            </div>
                                           </td>
                                         </tr>
                                       ))}

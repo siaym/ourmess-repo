@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Send, AlertCircle, Mail } from 'lucide-react';
+import { Bell, Send, AlertCircle, Mail, ShieldAlert, KeyRound } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -33,6 +33,64 @@ export function Settings() {
   const [duesSuccess, setDuesSuccess] = useState('');
   
   const mailEnabled = currentMess?.mail_service_enabled ?? true;
+
+  // Reset Mess State
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [userInputCode, setUserInputCode] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  
+  const generateResetCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+  const handleInitiateReset = async () => {
+    setResetLoading(true);
+    setResetError('');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !user.email) throw new Error("Could not find your email.");
+      
+      const code = generateResetCode();
+      setResetCode(code);
+      
+      const res = await fetch('/api/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to_email: user.email,
+          to_name: user.user_metadata?.name || 'Mess Owner',
+          subject: 'Danger: Reset Mess Verification Code',
+          message: `You have requested to completely reset all financial data for your mess.\n\nYour 6-digit verification code is: **${code}**\n\nIf you did not request this, please ignore this email.`
+        })
+      });
+      
+      if (!res.ok) throw new Error("Failed to send verification email.");
+      setShowResetModal(true);
+    } catch (err: any) {
+      setResetError(err.message || "Failed to initiate reset.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleConfirmReset = async () => {
+    if (userInputCode !== resetCode) {
+      setResetError("Invalid verification code.");
+      return;
+    }
+    setResetLoading(true);
+    setResetError('');
+    try {
+      const { error } = await supabase.rpc('reset_mess_data', { p_mess_id: currentMess?.id });
+      if (error) throw error;
+      
+      alert("Success! Your mess has been completely reset.");
+      window.location.reload();
+    } catch (err: any) {
+      setResetError(err.message || "Failed to reset mess data.");
+      setResetLoading(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -293,6 +351,97 @@ export function Settings() {
               </form>
             </CardContent>
           </Card>
+          
+          {/* DANGER ZONE */}
+          <Card className="bg-destructive/5 backdrop-blur-xl border-destructive/20 mt-12 overflow-hidden">
+            <CardHeader className="bg-destructive/10 border-b border-destructive/20">
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <ShieldAlert className="w-5 h-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription className="text-destructive/80">
+                Irreversible and destructive actions for your mess.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="font-semibold text-lg">Factory Reset Mess Data</h4>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-md">
+                    This will permanently delete ALL meals, expenses, and deposits, giving you a completely fresh start. Your members and the mess itself will not be deleted.
+                  </p>
+                </div>
+                <Button 
+                  variant="destructive"
+                  onClick={handleInitiateReset}
+                  disabled={resetLoading || showResetModal}
+                >
+                  {resetLoading && !showResetModal ? 'Sending Email...' : 'Reset Mess'}
+                </Button>
+              </div>
+              
+              {resetError && !showResetModal && (
+                <p className="text-sm text-destructive mt-4">{resetError}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Reset Modal */}
+          {showResetModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-md bg-card border border-border shadow-lg rounded-xl overflow-hidden"
+              >
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-destructive font-bold text-xl mb-2">
+                    <KeyRound className="w-6 h-6" />
+                    Verify Reset
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    We just emailed a 6-digit verification code to you. Enter it below to confirm that you want to completely destroy all financial data in your mess.
+                  </p>
+                  
+                  <div className="space-y-2 pt-4">
+                    <Label>6-Digit Code</Label>
+                    <Input 
+                      value={userInputCode}
+                      onChange={(e) => setUserInputCode(e.target.value)}
+                      placeholder="123456"
+                      className="text-center tracking-widest text-lg font-mono"
+                      maxLength={6}
+                    />
+                  </div>
+
+                  {resetError && <p className="text-sm text-destructive">{resetError}</p>}
+                </div>
+                
+                <div className="flex gap-2 p-4 bg-muted/50 border-t border-border">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setShowResetModal(false);
+                      setUserInputCode('');
+                      setResetError('');
+                    }}
+                    disabled={resetLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    className="flex-1"
+                    onClick={handleConfirmReset}
+                    disabled={resetLoading || userInputCode.length !== 6}
+                  >
+                    {resetLoading ? 'Resetting...' : 'Confirm Reset'}
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
         </>
       )}
     </motion.div>
