@@ -34,7 +34,8 @@ export function Register() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      console.error("Signup Error:", signUpError);
+      setError(signUpError.message || JSON.stringify(signUpError, Object.getOwnPropertyNames(signUpError)) || "An unknown error occurred.");
       setLoading(false);
       return;
     }

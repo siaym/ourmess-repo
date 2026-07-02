@@ -41,12 +41,12 @@ ALTER TABLE public.mess_members DROP CONSTRAINT IF EXISTS mess_members_user_id_f
 ALTER TABLE public.mess_members ADD CONSTRAINT mess_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 -- Fix monthly_reports foreign keys
-ALTER TABLE public.monthly_reports DROP CONSTRAINT IF EXISTS monthly_reports_created_by_fkey;
-ALTER TABLE public.monthly_reports ADD CONSTRAINT monthly_reports_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE SET NULL;
+ALTER TABLE public.monthly_reports DROP CONSTRAINT IF EXISTS monthly_reports_closed_by_fkey;
+ALTER TABLE public.monthly_reports ADD CONSTRAINT monthly_reports_closed_by_fkey FOREIGN KEY (closed_by) REFERENCES public.users(id) ON DELETE SET NULL;
 
 -- Fix monthly_report_members foreign keys
-ALTER TABLE public.monthly_report_members DROP CONSTRAINT IF EXISTS monthly_report_members_user_id_fkey;
-ALTER TABLE public.monthly_report_members ADD CONSTRAINT monthly_report_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE public.monthly_report_members DROP CONSTRAINT IF EXISTS monthly_report_members_member_id_fkey;
+ALTER TABLE public.monthly_report_members ADD CONSTRAINT monthly_report_members_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 -- Fix notifications foreign keys
 ALTER TABLE public.notifications DROP CONSTRAINT IF EXISTS notifications_user_id_fkey;

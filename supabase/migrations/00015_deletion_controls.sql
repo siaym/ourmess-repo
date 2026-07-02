@@ -14,6 +14,7 @@ BEGIN
   DELETE FROM public.meals WHERE mess_id = p_mess_id;
   DELETE FROM public.monthly_reports WHERE mess_id = p_mess_id;
   DELETE FROM public.notifications WHERE mess_id = p_mess_id;
+  DELETE FROM public.activity_logs WHERE mess_id = p_mess_id;
   DELETE FROM public.mess_members WHERE mess_id = p_mess_id;
   DELETE FROM public.messes WHERE id = p_mess_id;
 END;
@@ -70,8 +71,9 @@ BEGIN
   -- Remove them from messes
   DELETE FROM public.mess_members WHERE user_id = p_user_id;
   
-  -- Delete notifications
+  -- Delete notifications and activity logs
   DELETE FROM public.notifications WHERE user_id = p_user_id;
+  DELETE FROM public.activity_logs WHERE user_id = p_user_id;
   
   -- Finally, wipe their public profile
   DELETE FROM public.users WHERE id = p_user_id;
