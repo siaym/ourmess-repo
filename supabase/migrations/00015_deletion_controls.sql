@@ -120,7 +120,7 @@ BEGIN
   SELECT count(*) INTO v_month_messes FROM public.messes WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE);
   SELECT count(*) INTO v_month_users FROM public.users WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE);
   SELECT sum(total_meal) INTO v_month_meals FROM public.meals WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE);
-  SELECT sum(amount) INTO v_month_expenses FROM public.expenses WHERE date_trunc('month', date) = date_trunc('month', CURRENT_DATE);
+  SELECT sum(amount) INTO v_month_expenses FROM public.expenses WHERE date_trunc('month', expense_date) = date_trunc('month', CURRENT_DATE);
 
   RETURN json_build_object(
     'total_messes', v_total_messes,
