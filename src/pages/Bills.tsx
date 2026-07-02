@@ -34,6 +34,8 @@ export function Bills() {
   const [loading, setLoading] = useState(true);
   const [newCat, setNewCat] = useState('');
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (currentMess) {
@@ -55,6 +57,15 @@ export function Bills() {
       setCategories(billsData.categories || []);
       setMemberBills(billsData.member_bills || []);
       setMembers(billsData.members || []);
+
+      // Fetch admin status
+      if (user) {
+        const { data: roleData } = await supabase.rpc('get_user_role', { 
+          p_mess_id: currentMess.id, 
+          p_user_id: user.id 
+        });
+        setIsAdmin(roleData === 'owner' || roleData === 'manager');
+      }
 
     } catch (error: any) {
       console.error('Error fetching bills:', error);
@@ -196,26 +207,30 @@ export function Bills() {
             className="w-48 bg-card"
           />
         </div>
-        <form onSubmit={handleAddCategory} className="flex items-center gap-2 w-full sm:w-auto">
-          <Input 
-            placeholder="Add new bill type..." 
-            value={newCat} 
-            onChange={(e) => setNewCat(e.target.value)} 
-            className="w-48"
-          />
-          <Button type="submit" variant="secondary" size="icon">
-            <Plus className="w-4 h-4" />
-          </Button>
-        </form>
+        {isAdmin && (
+          <form onSubmit={handleAddCategory} className="flex items-center gap-2 w-full sm:w-auto">
+            <Input 
+              placeholder="Add new bill type..." 
+              value={newCat} 
+              onChange={(e) => setNewCat(e.target.value)} 
+              className="w-48"
+            />
+            <Button type="submit" variant="secondary" size="icon">
+              <Plus className="w-4 h-4" />
+            </Button>
+          </form>
+        )}
       </div>
 
       <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-xl">Bills Checklist ({format(new Date(monthYear + '-01'), 'MMM yyyy')})</CardTitle>
-          <Button onClick={sendAllReminders} className="bg-primary text-primary-foreground">
-            <Send className="w-4 h-4 mr-2" />
-            Notify All
-          </Button>
+          {isAdmin && (
+            <Button onClick={sendAllReminders} className="bg-primary text-primary-foreground">
+              <Send className="w-4 h-4 mr-2" />
+              Notify All
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -230,17 +245,19 @@ export function Bills() {
                       <th key={cat.id} className="px-4 py-4 text-center font-semibold">
                         <div className="flex items-center justify-center gap-2 group">
                           {cat.name}
-                          <button 
-                            onClick={() => handleDeleteCategory(cat.id)}
-                            className="opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
-                            title="Delete Category"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          {isAdmin && (
+                            <button 
+                              onClick={() => handleDeleteCategory(cat.id)}
+                              className="opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
+                              title="Delete Category"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-4 rounded-tr-lg text-right font-semibold">Action</th>
+                    {isAdmin && <th className="px-4 py-4 rounded-tr-lg text-right font-semibold">Action</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/30">
@@ -257,8 +274,9 @@ export function Bills() {
                         return (
                           <td key={cat.id} className="px-4 py-4 text-center">
                             <button 
-                              onClick={() => toggleBill(cat.id, member.id, isPaid)}
-                              className="focus:outline-none hover:scale-110 transition-transform"
+                              onClick={() => isAdmin && toggleBill(cat.id, member.id, isPaid)}
+                              className={`focus:outline-none transition-transform ${isAdmin ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}`}
+                              disabled={!isAdmin}
                             >
                               {isPaid ? (
                                 <CheckCircle2 className="w-6 h-6 text-success mx-auto" />
@@ -269,21 +287,23 @@ export function Bills() {
                           </td>
                         );
                       })}
-                      <td className="px-4 py-4 text-right">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => sendReminder(member)}
-                          disabled={sendingEmail === member.id}
-                        >
-                          {sendingEmail === member.id ? 'Sending...' : (
-                            <>
-                              <Mail className="w-4 h-4 mr-2" />
-                              Email
-                            </>
-                          )}
-                        </Button>
-                      </td>
+                      {isAdmin && (
+                        <td className="px-4 py-4 text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => sendReminder(member)}
+                            disabled={sendingEmail === member.id}
+                          >
+                            {sendingEmail === member.id ? 'Sending...' : (
+                              <>
+                                <Mail className="w-4 h-4 mr-2" />
+                                Email
+                              </>
+                            )}
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {members.length === 0 && (

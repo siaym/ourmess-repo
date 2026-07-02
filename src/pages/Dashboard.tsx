@@ -81,11 +81,13 @@ export function Dashboard() {
       const { data: recentMeals } = await supabase.from('meal_details').select('member_name, created_at').eq('mess_id', currentMess.id).order('created_at', { ascending: false }).limit(4);
       const { data: recentExp } = await supabase.from('expense_details').select('spender_name, title, created_at').eq('mess_id', currentMess.id).order('created_at', { ascending: false }).limit(4);
       const { data: recentDep } = await supabase.from('deposit_details').select('depositor_name, amount, created_at').eq('mess_id', currentMess.id).order('created_at', { ascending: false }).limit(4);
+      const { data: recentBills } = await supabase.from('recent_bills_view').select('member_name, category_name, updated_at').eq('mess_id', currentMess.id).order('updated_at', { ascending: false }).limit(4);
 
       let allActivity: any[] = [];
       if (recentMeals) allActivity.push(...recentMeals.map(m => ({ id: m.created_at + 'm', type: 'Meal', text: `${m.member_name} logged a meal`, date: m.created_at, icon: Utensils })));
       if (recentExp) allActivity.push(...recentExp.map(e => ({ id: e.created_at + 'e', type: 'Expense', text: `${e.spender_name} logged an expense: ${e.title}`, date: e.created_at, icon: Receipt })));
       if (recentDep) allActivity.push(...recentDep.map(d => ({ id: d.created_at + 'd', type: 'Deposit', text: `${d.depositor_name} deposited ৳${d.amount}`, date: d.created_at, icon: Wallet })));
+      if (recentBills) allActivity.push(...recentBills.map(b => ({ id: b.updated_at + 'b', type: 'Bill', text: `${b.member_name} paid the ${b.category_name} bill`, date: b.updated_at, icon: Receipt })));
 
       allActivity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setActivities(allActivity.slice(0, 6));

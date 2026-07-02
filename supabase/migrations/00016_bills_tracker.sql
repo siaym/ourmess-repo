@@ -110,8 +110,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.mess_members WHERE mess_id = p_mess_id AND user_id = auth.uid() AND is_deleted = false) THEN
-    RAISE EXCEPTION 'Not a member of this mess';
+  IF NOT EXISTS (SELECT 1 FROM public.mess_members WHERE mess_id = p_mess_id AND user_id = auth.uid() AND role IN ('owner', 'manager') AND is_deleted = false) THEN
+    RAISE EXCEPTION 'Only managers can update bills';
   END IF;
 
   INSERT INTO public.member_bills (mess_id, category_id, member_id, month_year, is_paid)
