@@ -34,6 +34,10 @@ interface GlobalStats {
   total_users: number;
   total_meals: number;
   total_expenses: number;
+  month_messes: number;
+  month_users: number;
+  month_meals: number;
+  month_expenses: number;
 }
 
 export function SuperAdmin() {
@@ -58,7 +62,11 @@ export function SuperAdmin() {
       if (messErr) throw messErr;
       setMesses(messData || []);
 
-      const { data: statsData } = await supabase.rpc('get_global_statistics');
+      const { data: statsData, error: statsErr } = await supabase.rpc('get_global_statistics');
+      if (statsErr) {
+        console.error("Stats Error:", statsErr);
+        throw statsErr;
+      }
       if (statsData) setStats(statsData as GlobalStats);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch data');
@@ -223,6 +231,7 @@ export function SuperAdmin() {
                   <Activity className="w-6 h-6 text-primary mb-2" />
                   <p className="text-2xl font-bold">{stats.total_messes}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Messes</p>
+                  {stats.month_messes > 0 && <p className="text-xs text-success mt-1">+{stats.month_messes} this month</p>}
                 </CardContent>
               </Card>
               <Card className="bg-card/50 backdrop-blur-xl border-border/50">
@@ -230,6 +239,7 @@ export function SuperAdmin() {
                   <Users className="w-6 h-6 text-primary mb-2" />
                   <p className="text-2xl font-bold">{stats.total_users}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Users</p>
+                  {stats.month_users > 0 && <p className="text-xs text-success mt-1">+{stats.month_users} this month</p>}
                 </CardContent>
               </Card>
               <Card className="bg-card/50 backdrop-blur-xl border-border/50">
@@ -237,6 +247,7 @@ export function SuperAdmin() {
                   <div className="text-2xl font-bold mb-2 text-primary">🍽️</div>
                   <p className="text-2xl font-bold">{stats.total_meals}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Meals Logged</p>
+                  {stats.month_meals > 0 && <p className="text-xs text-success mt-1">+{stats.month_meals} this month</p>}
                 </CardContent>
               </Card>
               <Card className="bg-card/50 backdrop-blur-xl border-border/50">
@@ -244,6 +255,7 @@ export function SuperAdmin() {
                   <div className="text-2xl font-bold mb-2 text-primary">৳</div>
                   <p className="text-2xl font-bold">{Number(stats.total_expenses).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Expenses</p>
+                  {stats.month_expenses > 0 && <p className="text-xs text-success mt-1">+৳{Number(stats.month_expenses).toLocaleString()} this month</p>}
                 </CardContent>
               </Card>
             </div>
