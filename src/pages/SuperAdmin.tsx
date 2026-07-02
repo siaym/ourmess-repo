@@ -225,39 +225,72 @@ export function SuperAdmin() {
         >
           {/* Global Statistics */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <Activity className="w-6 h-6 text-primary mb-2" />
-                  <p className="text-2xl font-bold">{stats.total_messes}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Messes</p>
-                  {stats.month_messes > 0 && <p className="text-xs text-success mt-1">+{stats.month_messes} this month</p>}
-                </CardContent>
-              </Card>
-              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <Users className="w-6 h-6 text-primary mb-2" />
-                  <p className="text-2xl font-bold">{stats.total_users}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Users</p>
-                  {stats.month_users > 0 && <p className="text-xs text-success mt-1">+{stats.month_users} this month</p>}
-                </CardContent>
-              </Card>
-              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <div className="text-2xl font-bold mb-2 text-primary">🍽️</div>
-                  <p className="text-2xl font-bold">{stats.total_meals}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Meals Logged</p>
-                  {stats.month_meals > 0 && <p className="text-xs text-success mt-1">+{stats.month_meals} this month</p>}
-                </CardContent>
-              </Card>
-              <Card className="bg-card/50 backdrop-blur-xl border-border/50">
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <div className="text-2xl font-bold mb-2 text-primary">৳</div>
-                  <p className="text-2xl font-bold">{Number(stats.total_expenses).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Expenses</p>
-                  {stats.month_expenses > 0 && <p className="text-xs text-success mt-1">+৳{Number(stats.month_expenses).toLocaleString()} this month</p>}
-                </CardContent>
-              </Card>
+            <div className="space-y-8 mb-12">
+              <div>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-primary" />
+                  This Month's Activity
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-primary/5 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-3xl font-bold text-primary">{stats.month_messes}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">New Messes</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-primary/5 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-3xl font-bold text-primary">{stats.month_users}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">New Users</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-primary/5 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-3xl font-bold text-primary">{stats.month_meals}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">Meals Logged</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-primary/5 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-3xl font-bold text-primary">৳{Number(stats.month_expenses).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">Total Expenses</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-muted-foreground" />
+                  All-Time Statistics
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-card/50 backdrop-blur-xl border-border/50 opacity-90">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-2xl font-bold">{stats.total_messes}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Total Messes</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card/50 backdrop-blur-xl border-border/50 opacity-90">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-2xl font-bold">{stats.total_users}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Total Users</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card/50 backdrop-blur-xl border-border/50 opacity-90">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-2xl font-bold">{stats.total_meals}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Total Meals Logged</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card/50 backdrop-blur-xl border-border/50 opacity-90">
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <p className="text-2xl font-bold">৳{Number(stats.total_expenses).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Total Expenses</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
           )}
 
