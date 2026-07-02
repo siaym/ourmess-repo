@@ -265,8 +265,7 @@ export function Bills() {
                     <tr key={member.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-4 font-medium">
                         <div className="flex flex-col">
-                          <span>{member.name}</span>
-                          <span className="text-xs text-muted-foreground">{member.email}</span>
+                          <span className="font-medium">{member.name}</span>
                         </div>
                       </td>
                       {categories.map(cat => {
