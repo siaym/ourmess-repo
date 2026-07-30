@@ -160,6 +160,7 @@ export function Members() {
                 <tr>
                   <th className="px-6 py-4 font-medium">Name</th>
                   <th className="px-6 py-4 font-medium">Role</th>
+                  <th className="px-6 py-4 font-medium">Total Deposits</th>
                   <th className="px-6 py-4 font-medium">Total Meals</th>
                   <th className="px-6 py-4 font-medium">Balance</th>
                   {isAdmin && <th className="px-6 py-4 font-medium text-right">Actions</th>}
@@ -196,6 +197,7 @@ export function Members() {
                           {member.role}
                         </span>
                       </td>
+                      <td className="px-6 py-4">৳ {Number(member.total_deposits || 0).toFixed(2)}</td>
                       <td className="px-6 py-4">{Number(member.total_meals).toFixed(1)}</td>
                       <td className="px-6 py-4">
                         <span className={member.balance < 0 ? 'text-destructive font-medium' : member.balance > 0 ? 'text-success font-medium' : ''}>
