@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { MembersSummaryDTO, MemberDTO } from '../dtos.js';
+import type { MembersSummaryDTO, MemberDTO } from '../dtos/index.js';
 import { enforceMinRole } from '../utils/auth.js';
 
 export async function getMembersSummary(context: AiAuthContext): Promise<MembersSummaryDTO> {

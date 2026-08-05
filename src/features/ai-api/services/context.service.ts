@@ -1,5 +1,5 @@
 import type { AiAuthContext } from '../utils/auth.js';
-import type { ContextDTO } from '../dtos.js';
+import type { ContextDTO } from '../dtos/index.js';
 import { getProfile } from './profile.service.js';
 import { getBalance } from './balance.service.js';
 import { getMealRate } from './meal.service.js';

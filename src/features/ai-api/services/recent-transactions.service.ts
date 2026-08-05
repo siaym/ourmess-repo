@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { RecentTransactionsSummaryDTO, RecentTransactionDTO } from '../dtos.js';
+import type { RecentTransactionsSummaryDTO, RecentTransactionDTO } from '../dtos/index.js';
 
 export async function getRecentTransactions(context: AiAuthContext): Promise<RecentTransactionsSummaryDTO> {
   // Fetch deposits for the user

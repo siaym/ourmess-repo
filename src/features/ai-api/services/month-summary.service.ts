@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { MonthSummaryDTO } from '../dtos.js';
+import type { MonthSummaryDTO } from '../dtos/index.js';
 import { getMealRate } from './meal.service.js';
 
 export async function getMonthSummary(context: AiAuthContext): Promise<MonthSummaryDTO> {

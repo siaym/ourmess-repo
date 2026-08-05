@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { BillDTO } from '../dtos.js';
+import type { BillDTO } from '../dtos/index.js';
 import { getBalance } from './balance.service.js';
 
 export async function getCurrentBill(context: AiAuthContext): Promise<BillDTO> {

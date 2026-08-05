@@ -1,5 +1,5 @@
 import type { AiAuthContext } from '../utils/auth.js';
-import type { ProfileDTO } from '../dtos.js';
+import type { ProfileDTO } from '../dtos/index.js';
 
 export async function getProfile(context: AiAuthContext): Promise<ProfileDTO> {
   // Assuming mess name is not strictly required to be queried again if we just want basic info,

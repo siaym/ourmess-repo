@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../../types/database.js';
+// @ts-ignore
+import type { Database } from '../../../types/database';
 
 // Initialize a supabase admin client or rely on the fact that getUser checks JWT against the server.
 // For serverless functions, we should use a fresh client with the request context if possible, 

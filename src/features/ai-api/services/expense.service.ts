@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { ExpensesSummaryDTO, ExpenseRecordDTO } from '../dtos.js';
+import type { ExpensesSummaryDTO, ExpenseRecordDTO } from '../dtos/index.js';
 
 export async function getExpensesSummary(context: AiAuthContext): Promise<ExpensesSummaryDTO> {
   const date = new Date();

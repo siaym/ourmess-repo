@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { PaymentHistoryDTO } from '../dtos.js';
+import type { PaymentHistoryDTO } from '../dtos/index.js';
 
 export async function getPaymentHistory(context: AiAuthContext): Promise<PaymentHistoryDTO> {
   const { data, error } = await aiSupabase

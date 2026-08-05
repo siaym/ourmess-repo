@@ -1,6 +1,6 @@
 import { aiSupabase } from '../utils/auth.js';
 import type { AiAuthContext } from '../utils/auth.js';
-import type { BalanceDTO } from '../dtos.js';
+import type { BalanceDTO } from '../dtos/index.js';
 
 export async function getBalance(context: AiAuthContext): Promise<BalanceDTO> {
   // Using the member_balances view that already exists in the project

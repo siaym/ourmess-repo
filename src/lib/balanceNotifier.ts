@@ -1,4 +1,6 @@
+// @ts-ignore: Vercel node16 complains about missing .js
 import { supabase } from './supabase';
+// @ts-ignore: Vercel node16 complains about missing .js
 import { sendEmailNotification } from './emailService';
 
 export interface MemberBalance {

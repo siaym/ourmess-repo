@@ -1,5 +1,5 @@
 import type { AiAuthContext } from '../utils/auth.js';
-import type { NotificationDTO } from '../dtos.js';
+import type { NotificationDTO } from '../dtos/index.js';
 
 export async function getNotifications(context: AiAuthContext): Promise<NotificationDTO[]> {
   // As per the provided schema, there is no explicit `notifications` table.
