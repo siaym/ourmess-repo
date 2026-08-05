@@ -1,6 +1,6 @@
-import { aiSupabase } from '../utils/auth';
-import type { AiAuthContext } from '../utils/auth';
-import type { DepositsSummaryDTO, DepositRecordDTO } from '../dtos';
+import { aiSupabase } from '../utils/auth.js';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { DepositsSummaryDTO, DepositRecordDTO } from '../dtos.js';
 
 export async function getDepositsSummary(context: AiAuthContext): Promise<DepositsSummaryDTO> {
   const { data, error } = await aiSupabase

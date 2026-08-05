@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getRecentTransactions } from '../../src/features/ai-api/services/recent-transactions.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getRecentTransactions } from '../../src/features/ai-api/services/recent-transactions.service.js';
 
 export default withAiApiHandler('getRecentTransactions', async (req, res, context) => {
   if (req.method !== 'GET') {

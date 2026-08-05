@@ -1,7 +1,7 @@
-import { aiSupabase } from '../utils/auth';
-import type { AiAuthContext } from '../utils/auth';
-import type { MealRateDTO, MealsSummaryDTO, MealRecordDTO } from '../dtos';
-import { aiCache } from '../utils/cache';
+import { aiSupabase } from '../utils/auth.js';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { MealRateDTO, MealsSummaryDTO, MealRecordDTO } from '../dtos.js';
+import { aiCache } from '../utils/cache.js';
 
 export async function getMealRate(context: AiAuthContext): Promise<MealRateDTO> {
   const cacheKey = `mealRate_${context.messId}`;

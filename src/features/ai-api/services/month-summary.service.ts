@@ -1,7 +1,7 @@
-import { aiSupabase } from '../utils/auth';
-import type { AiAuthContext } from '../utils/auth';
-import type { MonthSummaryDTO } from '../dtos';
-import { getMealRate } from './meal.service';
+import { aiSupabase } from '../utils/auth.js';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { MonthSummaryDTO } from '../dtos.js';
+import { getMealRate } from './meal.service.js';
 
 export async function getMonthSummary(context: AiAuthContext): Promise<MonthSummaryDTO> {
   const date = new Date();

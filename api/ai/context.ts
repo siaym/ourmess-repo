@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getContext } from '../../src/features/ai-api/services/context.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getContext } from '../../src/features/ai-api/services/context.service.js';
 
 export default withAiApiHandler('getContext', async (req, res, context) => {
   if (req.method !== 'GET') {

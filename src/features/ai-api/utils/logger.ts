@@ -1,4 +1,4 @@
-import type { AiAuthContext } from './auth';
+import type { AiAuthContext } from './auth.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 /**
@@ -50,7 +50,7 @@ export function withAiApiHandler(
 
     try {
       // Dynamic import to avoid circular dependencies if any
-      const { getAiAuthContext, UnauthorizedError, ForbiddenError } = await import('./auth');
+      const { getAiAuthContext, UnauthorizedError, ForbiddenError } = await import('./auth.js');
       
       authContext = await getAiAuthContext(req.headers.authorization);
 
@@ -72,7 +72,7 @@ export function withAiApiHandler(
       }
     } catch (error: any) {
       const latencyMs = Date.now() - startTime;
-      const { UnauthorizedError, ForbiddenError } = await import('./auth');
+      const { UnauthorizedError, ForbiddenError } = await import('./auth.js');
 
       if (error instanceof UnauthorizedError) {
         aiLogger.info(`AI API Unauthorized: ${handlerName}`, {

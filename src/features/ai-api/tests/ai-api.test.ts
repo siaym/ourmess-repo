@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { enforceMinRole, UnauthorizedError, ForbiddenError } from '../utils/auth';
+import { enforceMinRole, UnauthorizedError, ForbiddenError } from '../utils/auth.js';
 
 describe('AI API Utilities', () => {
   describe('Permissions', () => {

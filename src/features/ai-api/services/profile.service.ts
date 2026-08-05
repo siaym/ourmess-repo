@@ -1,12 +1,12 @@
-import type { AiAuthContext } from '../utils/auth';
-import type { ProfileDTO } from '../dtos';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { ProfileDTO } from '../dtos.js';
 
 export async function getProfile(context: AiAuthContext): Promise<ProfileDTO> {
   // Assuming mess name is not strictly required to be queried again if we just want basic info,
   // but to fulfill the DTO, we should fetch mess name.
   
   // To keep it clean, we'll import aiSupabase and fetch it
-  const { aiSupabase } = await import('../utils/auth');
+  const { aiSupabase } = await import('../utils/auth.js');
 
   const { data, error } = await aiSupabase
     .from('messes')

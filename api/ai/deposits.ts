@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getDepositsSummary } from '../../src/features/ai-api/services/deposit.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getDepositsSummary } from '../../src/features/ai-api/services/deposit.service.js';
 
 export default withAiApiHandler('getDepositsSummary', async (req, res, context) => {
   if (req.method !== 'GET') {

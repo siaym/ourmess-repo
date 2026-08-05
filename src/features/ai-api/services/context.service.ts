@@ -1,11 +1,11 @@
-import type { AiAuthContext } from '../utils/auth';
-import type { ContextDTO } from '../dtos';
-import { getProfile } from './profile.service';
-import { getBalance } from './balance.service';
-import { getMealRate } from './meal.service';
-import { getDepositsSummary } from './deposit.service';
-import { getExpensesSummary } from './expense.service';
-import { getNotifications } from './notification.service';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { ContextDTO } from '../dtos.js';
+import { getProfile } from './profile.service.js';
+import { getBalance } from './balance.service.js';
+import { getMealRate } from './meal.service.js';
+import { getDepositsSummary } from './deposit.service.js';
+import { getExpensesSummary } from './expense.service.js';
+import { getNotifications } from './notification.service.js';
 
 export async function getContext(context: AiAuthContext): Promise<ContextDTO> {
   // Execute all independent promises concurrently for performance

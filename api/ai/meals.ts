@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getMealsSummary } from '../../src/features/ai-api/services/meal.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getMealsSummary } from '../../src/features/ai-api/services/meal.service.js';
 
 export default withAiApiHandler('getMealsSummary', async (req, res, context) => {
   if (req.method !== 'GET') {

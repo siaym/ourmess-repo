@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getExpensesSummary } from '../../src/features/ai-api/services/expense.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getExpensesSummary } from '../../src/features/ai-api/services/expense.service.js';
 
 export default withAiApiHandler('getExpensesSummary', async (req, res, context) => {
   if (req.method !== 'GET') {

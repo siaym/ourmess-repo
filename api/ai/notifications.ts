@@ -1,5 +1,5 @@
-import { withAiApiHandler } from '../../src/features/ai-api/utils/logger';
-import { getNotifications } from '../../src/features/ai-api/services/notification.service';
+import { withAiApiHandler } from '../../src/features/ai-api/utils/logger.js';
+import { getNotifications } from '../../src/features/ai-api/services/notification.service.js';
 
 export default withAiApiHandler('getNotifications', async (req, res, context) => {
   if (req.method !== 'GET') {

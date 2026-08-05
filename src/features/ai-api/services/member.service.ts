@@ -1,7 +1,7 @@
-import { aiSupabase } from '../utils/auth';
-import type { AiAuthContext } from '../utils/auth';
-import type { MembersSummaryDTO, MemberDTO } from '../dtos';
-import { enforceMinRole } from '../utils/auth';
+import { aiSupabase } from '../utils/auth.js';
+import type { AiAuthContext } from '../utils/auth.js';
+import type { MembersSummaryDTO, MemberDTO } from '../dtos.js';
+import { enforceMinRole } from '../utils/auth.js';
 
 export async function getMembersSummary(context: AiAuthContext): Promise<MembersSummaryDTO> {
   // Enforce permissions: Only managers and owners can see all members' details
