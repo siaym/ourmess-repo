@@ -8,11 +8,14 @@ export function AntigravityWidget() {
   const { user, session } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const widgetUrl = import.meta.env.VITE_AI_WIDGET_URL || 'http://localhost:3000';
+  const widgetOrigin = new URL(widgetUrl).origin;
+
   const handleIframeLoad = () => {
     if (session?.access_token && iframeRef.current?.contentWindow) {
       iframeRef.current.contentWindow.postMessage(
         { type: 'AI_WIDGET_AUTH', token: session.access_token },
-        'http://localhost:3000'
+        widgetOrigin
       );
     }
   };
@@ -37,7 +40,7 @@ export function AntigravityWidget() {
             <iframe 
               ref={iframeRef}
               onLoad={handleIframeLoad}
-              src={`http://localhost:3000/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}`}
+              src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}`}
               className="w-full h-full border-none"
               title="Antigravity AI Widget"
             />
