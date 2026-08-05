@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { NotificationsDropdown } from './NotificationsDropdown';
+import { AntigravityWidget } from './AntigravityWidget';
 import { useAuth } from '../../contexts/AuthContext';
 import { Menu } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -36,6 +37,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+      <AntigravityWidget />
     </div>
   );
 }
