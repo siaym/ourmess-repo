@@ -12,11 +12,17 @@ export function AntigravityWidget() {
   const widgetOrigin = widgetUrl ? new URL(widgetUrl).origin : '';
 
   const handleIframeLoad = () => {
-    if (session?.access_token && iframeRef.current?.contentWindow && widgetOrigin) {
-      iframeRef.current.contentWindow.postMessage(
-        { type: 'AI_WIDGET_AUTH', token: session.access_token },
-        widgetOrigin
-      );
+    if (iframeRef.current?.contentWindow && widgetOrigin) {
+      if (session?.access_token) {
+        iframeRef.current.contentWindow.postMessage(
+          { type: 'AI_WIDGET_AUTH', token: session.access_token },
+          widgetOrigin
+        );
+      }
+      // Attempt to tell the embedded widget to open its chat interface automatically
+      iframeRef.current.contentWindow.postMessage({ type: 'TOGGLE_WIDGET', isOpen: true }, widgetOrigin);
+      iframeRef.current.contentWindow.postMessage({ type: 'OPEN_WIDGET' }, widgetOrigin);
+      iframeRef.current.contentWindow.postMessage({ type: 'SET_THEME', theme: 'transparent' }, widgetOrigin);
     }
   };
 
@@ -35,13 +41,15 @@ export function AntigravityWidget() {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex-1 bg-background flex flex-col items-center justify-center">
+          <div className="flex-1 bg-background flex flex-col items-center justify-center relative">
             {widgetUrl ? (
               <iframe 
                 ref={iframeRef}
                 onLoad={handleIframeLoad}
-                src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}`}
-                className="w-full h-full border-none"
+                src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}&autoOpen=true&open=true&theme=transparent&mode=chat`}
+                className="w-full h-full border-none absolute inset-0"
+                style={{ colorScheme: 'normal' }}
+                allowTransparency={true}
                 title="Antigravity AI Widget"
               />
             ) : (
