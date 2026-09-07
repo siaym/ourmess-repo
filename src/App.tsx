@@ -13,6 +13,7 @@ import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { SuperAdmin } from './pages/SuperAdmin';
 import { Bills } from './pages/Bills';
+import { Landing } from './pages/Landing';
 
 const Loading = () => <div className="flex h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
 
@@ -41,7 +42,7 @@ const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading || loadingMess) return <Loading />;
   if (!user) return <Navigate to="/login" />;
-  if (currentMess) return <Navigate to="/" />;
+  if (currentMess) return <Navigate to="/dashboard" />;
   
   return <>{children}</>;
 };
@@ -51,7 +52,7 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (loading || loadingMess) return <Loading />;
   if (!user) return <Navigate to="/login" />;
-  if (systemRole !== 'super_admin') return <Navigate to="/" />;
+  if (systemRole !== 'super_admin') return <Navigate to="/dashboard" />;
   
   return <>{children}</>;
 };
@@ -64,7 +65,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/onboarding" element={<OnboardingRoute><Onboarding /></OnboardingRoute>} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
           <Route path="/meals" element={<ProtectedRoute><Meals /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />

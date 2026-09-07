@@ -30,7 +30,7 @@ export function Login() {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
@@ -64,7 +64,7 @@ export function Login() {
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-2 font-bold text-3xl tracking-tight text-primary">
             <Utensils className="h-8 w-8" />
-            <span>MessFlow</span>
+            <span>OurMess</span>
           </div>
         </div>
 

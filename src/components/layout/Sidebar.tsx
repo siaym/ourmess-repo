@@ -9,7 +9,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
   const { signOut, systemRole } = useAuth();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Members', href: '/members', icon: Users },
     { name: 'Meals', href: '/meals', icon: Utensils },
     { name: 'Expenses', href: '/expenses', icon: Receipt },
@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
         <div className="flex h-16 items-center justify-between px-6 border-b border-border">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
             <Utensils className="h-6 w-6" />
-            <span>MessFlow</span>
+            <span>OurMess</span>
           </div>
           <Button variant="ghost" size="icon" className="md:hidden" onClick={onClose}>
             <X className="h-5 w-5" />

@@ -206,7 +206,7 @@ export function SuperAdmin() {
           <span>MessFlow Super Admin</span>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Back to App
           </Button>
           <Button variant="destructive" size="sm" onClick={signOut}>

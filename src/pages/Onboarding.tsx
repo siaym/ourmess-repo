@@ -39,7 +39,7 @@ export function Onboarding() {
       setLoading(false);
     } else {
       await refreshMess();
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
@@ -57,7 +57,7 @@ export function Onboarding() {
       setLoading(false);
     } else {
       await refreshMess();
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
@@ -70,7 +70,7 @@ export function Onboarding() {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2 font-bold text-3xl tracking-tight text-primary">
             <Utensils className="h-8 w-8" />
-            <span>MessFlow</span>
+            <span>OurMess</span>
           </div>
           <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
             <LogOut className="h-4 w-4 mr-2" />
