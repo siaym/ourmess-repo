@@ -13,28 +13,28 @@ export function Problem() {
 
         <div className="grid md:grid-cols-2 gap-24 items-start">
           {/* Chaos */}
-          <div className="relative h-[400px] font-mono text-sm md:text-base text-muted-foreground">
+          <div className="relative h-[300px] md:h-[400px] font-mono text-sm md:text-base text-muted-foreground w-full overflow-hidden">
             <motion.div 
-              initial={{ opacity: 0, x: -20, y: 10, rotate: -5 }}
+              initial={{ opacity: 0, x: -10, y: 10, rotate: -3 }}
               whileInView={{ opacity: 0.5, x: 0, y: 0, rotate: 0 }}
               viewport={{ once: true }}
-              className="absolute top-0 left-0"
+              className="absolute top-[5%] left-[5%]"
             >
               Breakfast 8
             </motion.div>
             <motion.div 
-              initial={{ opacity: 0, x: 30, y: -20, rotate: 8 }}
+              initial={{ opacity: 0, x: 20, y: -10, rotate: 6 }}
               whileInView={{ opacity: 0.6, x: 0, y: 0, rotate: 0 }}
               viewport={{ once: true }}
-              className="absolute top-12 left-1/4"
+              className="absolute top-[15%] left-[30%]"
             >
               Lunch 11
             </motion.div>
             <motion.div 
-              initial={{ opacity: 0, x: -40, y: 30, rotate: -12 }}
+              initial={{ opacity: 0, x: -20, y: 20, rotate: -8 }}
               whileInView={{ opacity: 0.4, x: 0, y: 0, rotate: 0 }}
               viewport={{ once: true }}
-              className="absolute top-24 left-1/2"
+              className="absolute top-[25%] left-[55%]"
             >
               Dinner 9
             </motion.div>
@@ -42,15 +42,15 @@ export function Problem() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 0.7, y: 0 }}
               viewport={{ once: true }}
-              className="absolute top-40 left-0 text-foreground"
+              className="absolute top-[40%] left-[5%] text-foreground"
             >
-              Market ৳4,850 <span className="text-muted-foreground opacity-50">(paid by Rahim?)</span>
+              Market ৳4,850 <span className="text-muted-foreground opacity-50 block md:inline">(paid by Rahim?)</span>
             </motion.div>
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 0.5, x: 0 }}
               viewport={{ once: true }}
-              className="absolute top-52 right-10 line-through decoration-destructive"
+              className="absolute top-[55%] right-[5%] line-through decoration-destructive"
             >
               Total meals: 142
             </motion.div>
@@ -58,7 +58,7 @@ export function Problem() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 0.8 }}
               viewport={{ once: true }}
-              className="absolute top-64 left-1/4"
+              className="absolute top-[70%] left-[15%] text-xs md:text-sm"
             >
               Wait, Karim gave ৳2000 deposit?
             </motion.div>
@@ -66,7 +66,7 @@ export function Problem() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="absolute bottom-10 left-0 text-xl font-bold uppercase tracking-tight text-foreground"
+              className="absolute bottom-[5%] left-[5%] text-lg md:text-xl font-bold uppercase tracking-tight text-foreground"
             >
               Who owes whom?
             </motion.div>

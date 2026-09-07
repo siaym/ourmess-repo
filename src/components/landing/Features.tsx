@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 export function Features() {
   return (
-    <section className="py-32 border-t border-border bg-background" id="features">
+    <section className="border-t border-border bg-background" id="features">
       
       {/* 01 RECORD */}
       <div className="border-b border-border">

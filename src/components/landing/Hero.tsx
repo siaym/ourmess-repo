@@ -42,38 +42,38 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="relative pt-12 lg:pt-0"
+          className="relative pt-12 lg:pt-0 lg:pl-16 border-t lg:border-t-0 lg:border-l border-border"
         >
           <div className="font-mono text-sm md:text-base selection:bg-primary/30">
-            <div className="flex flex-col items-end text-right gap-1 mb-8">
+            <div className="flex flex-col items-start lg:items-end text-left lg:text-right gap-1 mb-12">
               <div className="text-6xl md:text-8xl font-light tracking-tighter">৳54.20</div>
-              <div className="text-xs tracking-[0.2em] font-bold text-muted-foreground uppercase">Current Meal Rate</div>
+              <div className="text-[10px] md:text-xs tracking-[0.2em] font-bold text-muted-foreground uppercase">Current Meal Rate</div>
             </div>
 
             <div className="space-y-4 border-t border-border pt-6 mt-6">
               <div className="flex justify-between items-end">
-                <span className="text-muted-foreground">Total Meals</span>
-                <span className="text-2xl">145</span>
+                <span className="text-muted-foreground uppercase text-xs tracking-widest">Total Meals</span>
+                <span className="text-2xl font-light">145</span>
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-muted-foreground">Total Expenses</span>
-                <span className="text-2xl">৳7,859</span>
+                <span className="text-muted-foreground uppercase text-xs tracking-widest">Total Expenses</span>
+                <span className="text-2xl font-light">৳7,859</span>
               </div>
             </div>
 
             <div className="border-t border-foreground pt-6 mt-6 space-y-3">
-              <div className="text-xs tracking-[0.2em] font-bold text-muted-foreground uppercase mb-4">Live Balances</div>
+              <div className="text-[10px] md:text-xs tracking-[0.2em] font-bold text-muted-foreground uppercase mb-6">Live Balances</div>
               <div className="flex justify-between items-center group">
-                <span className="group-hover:pl-2 transition-all">Siyam</span>
-                <span className="text-success">+৳450</span>
+                <span className="uppercase text-sm tracking-wider">Siyam</span>
+                <span className="text-success font-medium">+৳450</span>
               </div>
               <div className="flex justify-between items-center group">
-                <span className="group-hover:pl-2 transition-all">Rahim</span>
-                <span className="text-destructive">-৳120</span>
+                <span className="uppercase text-sm tracking-wider">Rahim</span>
+                <span className="text-destructive font-medium">-৳120</span>
               </div>
               <div className="flex justify-between items-center group">
-                <span className="group-hover:pl-2 transition-all">Karim</span>
-                <span className="text-success">+৳80</span>
+                <span className="uppercase text-sm tracking-wider">Karim</span>
+                <span className="text-success font-medium">+৳80</span>
               </div>
             </div>
           </div>

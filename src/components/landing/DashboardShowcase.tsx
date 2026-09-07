@@ -100,8 +100,9 @@ export function DashboardShowcase() {
             </div>
             
             {/* Bleeding edge element to break the box slightly */}
-            <div className="absolute -right-12 -bottom-12 w-64 h-64 border border-border/50 rounded-full" />
-            <div className="absolute -right-24 -bottom-24 w-[400px] h-[400px] border border-border/30 rounded-full" />
+            <div className="absolute -right-12 top-12 w-24 h-px bg-border" />
+            <div className="absolute right-12 -bottom-12 w-px h-24 bg-border" />
+            <div className="absolute -left-12 bottom-24 w-24 h-px bg-border" />
           </motion.div>
           
         </div>
