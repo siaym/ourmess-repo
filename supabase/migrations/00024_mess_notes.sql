@@ -8,7 +8,10 @@ CREATE TABLE public.mess_notes (
   month INT NOT NULL CHECK (month BETWEEN 1 AND 12),
   year INT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  is_deleted BOOLEAN DEFAULT FALSE,
+  deleted_at TIMESTAMPTZ,
+  deleted_by UUID REFERENCES public.users(id)
 );
 
 -- Enable RLS
