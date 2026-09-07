@@ -8,11 +8,11 @@ export function AntigravityWidget() {
   const { user, session } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const widgetUrl = import.meta.env.VITE_AI_WIDGET_URL || 'http://localhost:3000';
-  const widgetOrigin = new URL(widgetUrl).origin;
+  const widgetUrl = import.meta.env.VITE_AI_WIDGET_URL;
+  const widgetOrigin = widgetUrl ? new URL(widgetUrl).origin : '';
 
   const handleIframeLoad = () => {
-    if (session?.access_token && iframeRef.current?.contentWindow) {
+    if (session?.access_token && iframeRef.current?.contentWindow && widgetOrigin) {
       iframeRef.current.contentWindow.postMessage(
         { type: 'AI_WIDGET_AUTH', token: session.access_token },
         widgetOrigin
@@ -35,15 +35,22 @@ export function AntigravityWidget() {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex-1 bg-background">
-            {/* The actual Antigravity AI platform iframe */}
-            <iframe 
-              ref={iframeRef}
-              onLoad={handleIframeLoad}
-              src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}`}
-              className="w-full h-full border-none"
-              title="Antigravity AI Widget"
-            />
+          <div className="flex-1 bg-background flex flex-col items-center justify-center">
+            {widgetUrl ? (
+              <iframe 
+                ref={iframeRef}
+                onLoad={handleIframeLoad}
+                src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}`}
+                className="w-full h-full border-none"
+                title="Antigravity AI Widget"
+              />
+            ) : (
+              <div className="p-6 text-center text-muted-foreground flex flex-col items-center gap-4">
+                <MessageSquare className="h-12 w-12 opacity-20" />
+                <p className="font-medium">AI Assistant is taking a break.</p>
+                <p className="text-sm">Widget URL is not configured. Add VITE_AI_WIDGET_URL to your environment variables.</p>
+              </div>
+            )}
           </div>
         </div>
       )}

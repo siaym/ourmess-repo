@@ -23,7 +23,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate hidden sm:block">Welcome back, {user?.email}</h1>
-            <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate sm:hidden">MessFlow</h1>
+            <h1 className="text-base sm:text-lg font-semibold tracking-tight truncate sm:hidden">OurMess</h1>
           </div>
           <div className="flex items-center gap-4">
             <NotificationsDropdown />
