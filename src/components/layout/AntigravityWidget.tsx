@@ -41,13 +41,13 @@ export function AntigravityWidget() {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex-1 bg-background flex flex-col items-center justify-center relative">
+          <div className="flex-1 bg-transparent flex flex-col items-center justify-center relative">
             {widgetUrl ? (
               <iframe 
                 ref={iframeRef}
                 onLoad={handleIframeLoad}
-                src={`${widgetUrl}/embed/widget?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}&autoOpen=true&open=true&theme=transparent&mode=chat`}
-                className="w-full h-full border-none absolute inset-0"
+                src={`${widgetUrl}/embed/chat?businessId=default&userId=${user?.id || ''}&userEmail=${user?.email || ''}&theme=dark`}
+                className="w-full h-full border-none absolute inset-0 bg-transparent"
                 style={{ colorScheme: 'normal' }}
                 allowTransparency={true}
                 title="Antigravity AI Widget"
