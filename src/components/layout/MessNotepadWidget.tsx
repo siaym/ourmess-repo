@@ -76,18 +76,21 @@ export function MessNotepadWidget() {
     if (!currentMess) return;
     setLoading(true);
     
-    // We use a left join logic with users to get the author name
     const { data, error } = await supabase
       .from('mess_notes')
       .select(`
         *,
-        author:users ( name )
+        author:users!mess_notes_author_id_fkey ( name )
       `)
       .eq('mess_id', currentMess.id)
       .eq('month', month)
       .eq('year', year)
       .eq('is_deleted', false)
       .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error("Error fetching notes:", error);
+    }
 
     if (!error && data) {
       setNotes(data as Note[]);
@@ -112,6 +115,10 @@ export function MessNotepadWidget() {
         month: month,
         year: year
       });
+      
+    if (error) {
+      console.error("Error saving note:", error);
+    }
       
     setIsSubmitting(false);
     if (!error) {
