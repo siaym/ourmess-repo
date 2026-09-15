@@ -50,19 +50,25 @@ export function MessNotepadWidget() {
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
 
+  const [hasUnread, setHasUnread] = useState(false);
+
   useEffect(() => {
-    if (isOpen && currentMess) {
+    if (currentMess) {
       fetchNotes();
       
       const subscription = supabase
         .channel('public:mess_notes')
         .on('postgres_changes', { 
-          event: '*', 
+          event: 'INSERT', 
           schema: 'public', 
           table: 'mess_notes',
           filter: `mess_id=eq.${currentMess.id}`
-        }, () => {
+        }, (payload) => {
           fetchNotes();
+          // If a new note is added by someone else while closed, show dot
+          if (payload.new.author_id !== user?.id) {
+            setHasUnread(true);
+          }
         })
         .subscribe();
 
@@ -70,7 +76,15 @@ export function MessNotepadWidget() {
         supabase.removeChannel(subscription);
       };
     }
-  }, [isOpen, currentMess, month, year]);
+  }, [currentMess, month, year, user?.id]);
+
+  useEffect(() => {
+    if (isOpen && currentMess) {
+      setHasUnread(false);
+      // Save current time as last seen
+      localStorage.setItem(`last_seen_note_${currentMess.id}`, new Date().toISOString());
+    }
+  }, [isOpen, currentMess]);
 
   const fetchNotes = async () => {
     if (!currentMess) return;
@@ -93,7 +107,21 @@ export function MessNotepadWidget() {
     }
 
     if (!error && data) {
-      setNotes(data as Note[]);
+      const notesData = data as Note[];
+      setNotes(notesData);
+      
+      // Check for unread on load
+      if (notesData.length > 0 && !isOpen) {
+        const lastSeen = localStorage.getItem(`last_seen_note_${currentMess.id}`);
+        const latestNote = notesData[notesData.length - 1];
+        if (!lastSeen || new Date(latestNote.created_at) > new Date(lastSeen)) {
+          // Check if the latest note was not created by the current user
+          if (latestNote.author_id !== user?.id) {
+            setHasUnread(true);
+          }
+        }
+      }
+
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -288,9 +316,12 @@ export function MessNotepadWidget() {
       <Button
         onClick={() => setIsOpen(!isOpen)}
         size="icon"
-        className="h-14 w-14 rounded-full shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105"
+        className="h-14 w-14 rounded-full shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105 relative"
       >
         <StickyNote className="h-6 w-6 text-primary-foreground" />
+        {hasUnread && (
+          <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-destructive border-2 border-background animate-pulse" />
+        )}
       </Button>
     </div>
   );
