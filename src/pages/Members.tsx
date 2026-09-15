@@ -211,7 +211,7 @@ export function Members() {
                     <td colSpan={5} className="text-center py-8 text-muted-foreground">No members found.</td>
                   </tr>
                 ) : (
-                  filteredMembers.map((member) => (
+                  filteredMembers.map((member, index) => (
                     <tr key={member.member_id} className="hover:bg-muted/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export function Members() {
                           {activeMenuId === member.member_id && member.role !== 'owner' && (
                             <>
                               <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
-                              <div className="absolute right-6 top-10 z-20 w-48 bg-card border border-border rounded-md shadow-lg overflow-hidden py-1">
+                              <div className={`absolute right-6 z-20 w-48 bg-card border border-border rounded-md shadow-lg overflow-hidden py-1 ${index >= filteredMembers.length - 2 && filteredMembers.length > 3 ? 'bottom-10' : 'top-10'}`}>
                                 <button 
                                   className="w-full px-4 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
                                   onClick={() => handleRoleChange(member.member_id, member.role === 'manager' ? 'member' : 'manager')}
