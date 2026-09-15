@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Navbar() {
+  const { user, loading } = useAuth();
+
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
@@ -15,15 +18,26 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-6">
-          <Link to="/login" className="hidden sm:block font-mono text-xs uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground transition-colors">
-            Log in
-          </Link>
-          <Link 
-            to="/register"
-            className="h-10 px-6 flex items-center justify-center bg-foreground text-background font-bold uppercase tracking-widest text-xs hover:bg-foreground/90 transition-colors"
-          >
-            Get started
-          </Link>
+          {!loading && user ? (
+            <Link 
+              to="/dashboard"
+              className="h-10 px-6 flex items-center justify-center bg-foreground text-background font-bold uppercase tracking-widest text-xs hover:bg-foreground/90 transition-colors"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/login" className="hidden sm:block font-mono text-xs uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground transition-colors">
+                Log in
+              </Link>
+              <Link 
+                to="/register"
+                className="h-10 px-6 flex items-center justify-center bg-foreground text-background font-bold uppercase tracking-widest text-xs hover:bg-foreground/90 transition-colors"
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

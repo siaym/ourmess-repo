@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Hero() {
+  const { user, loading } = useAuth();
+
   return (
     <section className="pt-32 pb-16 md:pt-48 md:pb-32 px-4 md:px-8 max-w-[1400px] mx-auto">
       <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-16 items-start">
@@ -22,12 +25,21 @@ export function Hero() {
             </p>
             
             <div className="flex items-center gap-6 pt-4">
-              <Link 
-                to="/register" 
-                className="inline-flex h-14 items-center justify-center rounded-none bg-primary px-8 text-sm font-bold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Create your mess
-              </Link>
+              {!loading && user ? (
+                <Link 
+                  to="/dashboard" 
+                  className="inline-flex h-14 items-center justify-center rounded-none bg-primary px-8 text-sm font-bold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link 
+                  to="/register" 
+                  className="inline-flex h-14 items-center justify-center rounded-none bg-primary px-8 text-sm font-bold uppercase tracking-widest text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Create your mess
+                </Link>
+              )}
               <a 
                 href="#calculation" 
                 className="text-sm font-bold uppercase tracking-widest hover:text-primary transition-colors"
