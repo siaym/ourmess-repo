@@ -31,6 +31,13 @@ export function Members() {
   const [offlineName, setOfflineName] = useState('');
   const [addingOffline, setAddingOffline] = useState(false);
   const [offlineError, setOfflineError] = useState<string | null>(null);
+  
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailName, setEmailName] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [addingEmail, setAddingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   const [copied, setCopied] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -116,6 +123,30 @@ export function Members() {
     }
   };
 
+  const handleAddEmailMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentMess || !emailName.trim() || !emailAddress.trim()) return;
+    setAddingEmail(true);
+    setEmailError(null);
+
+    const { error: dbError } = await supabase.rpc('add_offline_member', {
+      p_mess_id: currentMess.id,
+      p_name: emailName.trim(),
+      p_email: emailAddress.trim()
+    });
+
+    if (dbError) {
+      setEmailError(dbError.message);
+      setAddingEmail(false);
+    } else {
+      await fetchMembers();
+      setShowEmailModal(false);
+      setAddingEmail(false);
+      setEmailName('');
+      setEmailAddress('');
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -128,10 +159,14 @@ export function Members() {
           <p className="text-muted-foreground mt-1">Manage users and roles in your mess.</p>
         </div>
         {isAdmin && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" className="shrink-0 gap-2" onClick={() => setShowOfflineModal(true)}>
               <UserPlus className="w-4 h-4" />
-              Add Manually
+              Add Offline
+            </Button>
+            <Button variant="outline" className="shrink-0 gap-2" onClick={() => setShowEmailModal(true)}>
+              <UserPlus className="w-4 h-4" />
+              Add by Email
             </Button>
             <Button className="shrink-0 gap-2" onClick={() => setShowInviteModal(true)}>
               <UserPlus className="w-4 h-4" />
@@ -319,6 +354,61 @@ export function Members() {
                   <div className="p-6 pt-0 flex justify-between">
                     <Button variant="ghost" type="button" onClick={() => setShowOfflineModal(false)} disabled={addingOffline}>Cancel</Button>
                     <Button type="submit" disabled={addingOffline}>{addingOffline ? 'Adding...' : 'Add Member'}</Button>
+                  </div>
+                </form>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showEmailModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowEmailModal(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="z-50 w-full max-w-md"
+            >
+              <Card className="border-border/50 bg-card/95 shadow-2xl">
+                <CardHeader>
+                  <CardTitle>Add by Email</CardTitle>
+                </CardHeader>
+                <form onSubmit={handleAddEmailMember}>
+                  <CardContent className="space-y-4">
+                    <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                      Create a profile for this user so you can start logging their meals and deposits immediately. When they later sign up or log in using this exact email (e.g., via Google), they will automatically claim this profile and bypass onboarding.
+                    </div>
+                    {emailError && <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">{emailError}</div>}
+                    <div className="space-y-2">
+                      <Label htmlFor="emailName">Roommate Name</Label>
+                      <Input 
+                        id="emailName" 
+                        required 
+                        placeholder="e.g. Rakib" 
+                        value={emailName} 
+                        onChange={e => setEmailName(e.target.value)} 
+                        disabled={addingEmail} 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="emailAddress">Email Address</Label>
+                      <Input 
+                        id="emailAddress" 
+                        type="email"
+                        required 
+                        placeholder="rakib@example.com" 
+                        value={emailAddress} 
+                        onChange={e => setEmailAddress(e.target.value)} 
+                        disabled={addingEmail} 
+                      />
+                    </div>
+                  </CardContent>
+                  <div className="p-6 pt-0 flex justify-between">
+                    <Button variant="ghost" type="button" onClick={() => setShowEmailModal(false)} disabled={addingEmail}>Cancel</Button>
+                    <Button type="submit" disabled={addingEmail}>{addingEmail ? 'Adding...' : 'Add by Email'}</Button>
                   </div>
                 </form>
               </Card>
