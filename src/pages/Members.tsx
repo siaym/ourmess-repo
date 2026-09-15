@@ -378,8 +378,16 @@ export function Members() {
                 </CardHeader>
                 <form onSubmit={handleAddEmailMember}>
                   <CardContent className="space-y-4">
-                    <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                      Create a profile for this user so you can start logging their meals and deposits immediately. When they later sign up or log in using this exact email (e.g., via Google), they will automatically claim this profile and bypass onboarding.
+                    <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md space-y-2 border border-border/50">
+                      <p>Create a placeholder profile so you can log their meals and deposits immediately.</p>
+                      <div className="font-medium text-foreground pt-1 border-t border-border/50 mt-2">
+                        How they join:
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>Tell them to go to the website and click <strong>"Continue with Google"</strong> using this exact email.</li>
+                        <li>Or, tell them to go to the <strong>Sign Up</strong> page and create an account with this exact email.</li>
+                      </ul>
+                      <p className="pt-1 text-xs">Once they do, their account will merge and they'll instantly join the mess!</p>
                     </div>
                     {emailError && <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">{emailError}</div>}
                     <div className="space-y-2">
