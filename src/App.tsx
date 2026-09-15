@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
@@ -67,8 +68,29 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Supabase redirects with a hash like #access_token=...&type=signup
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=signup')) {
+      setVerificationMessage("Email verified successfully! Welcome to OurMess.");
+      // Optional: remove hash to clean up URL
+      window.history.replaceState(null, '', window.location.pathname);
+    } else if (hash && hash.includes('type=recovery')) {
+      setVerificationMessage("Password recovery successful! You can now update your password in settings.");
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
   return (
     <AuthProvider>
+      {verificationMessage && (
+        <div className="fixed top-0 inset-x-0 z-[100] bg-success text-success-foreground p-3 text-center text-sm font-medium shadow-lg flex justify-between items-center px-4 md:px-8">
+          <div className="flex-1">{verificationMessage}</div>
+          <button onClick={() => setVerificationMessage(null)} className="text-success-foreground/80 hover:text-success-foreground text-2xl leading-none">&times;</button>
+        </div>
+      )}
       <Router>
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
