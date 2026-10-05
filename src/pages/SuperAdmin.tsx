@@ -43,7 +43,7 @@ interface GlobalStats {
 export function SuperAdmin() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'controls' | 'users'>('controls');
+  const [activeTab, setActiveTab] = useState<'controls' | 'users' | 'mail'>('controls');
   const [messes, setMesses] = useState<MessAdminData[]>([]);
   const [stats, setStats] = useState<GlobalStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +54,33 @@ export function SuperAdmin() {
   const [members, setMembers] = useState<Record<string, MessMemberData[]>>({});
   const [loadingMembers, setLoadingMembers] = useState<Record<string, boolean>>({});
   const [resetStatus, setResetStatus] = useState<{id: string, status: 'sending' | 'success' | 'error', msg?: string} | null>(null);
+
+  // Email sending state
+  const [emailTarget, setEmailTarget] = useState<'custom' | 'user' | 'all_users' | 'all_managers'>('custom');
+  const [customEmail, setCustomEmail] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (activeTab === 'mail' && allUsers.length === 0) {
+      const fetchUsers = async () => {
+        try {
+          const { data, error } = await supabase.rpc('get_all_users_admin');
+          if (error) {
+            console.error('Migration 00026_admin_emails may be missing:', error.message);
+            return;
+          }
+          setAllUsers(data || []);
+        } catch (err: any) {
+          console.error('Failed to fetch users for mail tab:', err.message);
+        }
+      };
+      fetchUsers();
+    }
+  }, [activeTab, allUsers.length]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -194,6 +221,64 @@ export function SuperAdmin() {
     }
   };
 
+  const handleSendEmail = async () => {
+    setSendingEmail(true);
+    try {
+      let recipients: {email: string, name: string}[] = [];
+      
+      if (emailTarget === 'custom') {
+        if (!customEmail) throw new Error('Please enter a custom email address.');
+        recipients.push({ email: customEmail, name: 'User' });
+      } else if (emailTarget === 'user') {
+        const user = allUsers.find(u => u.id === selectedUserId);
+        if (!user) throw new Error('Please select a user. (Note: users might not be loaded if migration is missing)');
+        recipients.push({ email: user.email, name: user.name });
+      } else if (emailTarget === 'all_users') {
+        recipients = allUsers.map(u => ({ email: u.email, name: u.name }));
+        if (recipients.length === 0) throw new Error('No users found. (Note: users might not be loaded if migration is missing)');
+      } else if (emailTarget === 'all_managers') {
+        recipients = allUsers.filter(u => u.is_manager).map(u => ({ email: u.email, name: u.name }));
+        if (recipients.length === 0) throw new Error('No managers found. (Note: users might not be loaded if migration is missing)');
+      }
+
+      if (!emailSubject || !emailMessage) {
+         throw new Error('Please enter a subject and message.');
+      }
+
+      let successCount = 0;
+      for (const rec of recipients) {
+        const res = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_email: rec.email,
+            to_name: rec.name,
+            subject: emailSubject,
+            message: emailMessage,
+          })
+        });
+        
+        if (!res.ok) {
+           const errData = await res.json();
+           console.error(`Failed to send to ${rec.email}:`, errData);
+        } else {
+           successCount++;
+        }
+      }
+
+      alert(`Successfully sent email to ${successCount} out of ${recipients.length} recipient(s).`);
+      if (successCount === recipients.length) {
+        setEmailSubject('');
+        setEmailMessage('');
+        setCustomEmail('');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Background ambient glow */}
@@ -315,6 +400,16 @@ export function SuperAdmin() {
               }`}
             >
               User Management
+            </button>
+            <button
+              onClick={() => setActiveTab('mail')}
+              className={`px-6 py-2.5 rounded-md font-medium text-sm transition-all ${
+                activeTab === 'mail' 
+                  ? 'bg-background shadow-sm text-primary' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+              }`}
+            >
+              System Mail
             </button>
           </div>
 
@@ -554,6 +649,97 @@ export function SuperAdmin() {
               )}
             </div>
           )}
+
+          {/* TAB 3: System Mail */}
+          {activeTab === 'mail' && (
+            <Card className="bg-card/50 backdrop-blur-xl border-border/50 border-t-4 border-t-primary">
+              <CardHeader>
+                <CardTitle>System Broadcast & Email</CardTitle>
+                <CardDescription>
+                  Send emails manually to a specific user, custom email, all users, or all mess managers.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4 max-w-2xl">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Recipient Type</label>
+                    <select 
+                      value={emailTarget} 
+                      onChange={(e) => setEmailTarget(e.target.value as any)}
+                      className="w-full flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="custom">Custom Email Address</option>
+                      <option value="user">Specific User in System</option>
+                      <option value="all_users">All Registered Users</option>
+                      <option value="all_managers">All Mess Managers / Owners</option>
+                    </select>
+                  </div>
+
+                  {emailTarget === 'custom' && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Email Address</label>
+                      <input 
+                        type="email" 
+                        value={customEmail} 
+                        onChange={(e) => setCustomEmail(e.target.value)}
+                        placeholder="user@example.com"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+                  )}
+
+                  {emailTarget === 'user' && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select User</label>
+                      <select 
+                        value={selectedUserId} 
+                        onChange={(e) => setSelectedUserId(e.target.value)}
+                        className="w-full flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      >
+                        <option value="">-- Select a User --</option>
+                        {allUsers.map(u => (
+                          <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                        ))}
+                      </select>
+                      {allUsers.length === 0 && <p className="text-xs text-destructive">No users loaded. Did you apply the SQL migration?</p>}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Subject</label>
+                    <input 
+                      type="text" 
+                      value={emailSubject} 
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="Important Update"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Message Body (HTML/Text)</label>
+                    <textarea 
+                      value={emailMessage} 
+                      onChange={(e) => setEmailMessage(e.target.value)}
+                      rows={8}
+                      placeholder="Write your message here..."
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleSendEmail} 
+                    disabled={sendingEmail}
+                    className="w-full sm:w-auto mt-4"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    {sendingEmail ? 'Sending...' : 'Send Email'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
         </motion.div>
       </main>
     </div>
