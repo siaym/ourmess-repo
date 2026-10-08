@@ -1,3 +1,4 @@
+// Meal Tracking Component
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Utensils, Plus, Calendar, Trash2 } from 'lucide-react';
