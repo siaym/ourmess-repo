@@ -39,7 +39,7 @@ export function Meals() {
   
   // Form State
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [memberId, setMemberId] = useState('');
+  const [memberIds, setMemberIds] = useState<string[]>([]);
   const [breakfast, setBreakfast] = useState('0');
   const [lunch, setLunch] = useState('0');
   const [dinner, setDinner] = useState('0');
@@ -63,8 +63,8 @@ export function Meals() {
       
     if (memberData) {
       setMembers(memberData.map((m: any) => ({ user_id: m.member_id, name: m.name })));
-      if (memberData.length > 0 && !memberId) {
-        setMemberId(memberData[0].member_id);
+      if (memberData.length > 0 && memberIds.length === 0) {
+        setMemberIds([memberData[0].member_id]);
       }
     }
 
@@ -87,6 +87,10 @@ export function Meals() {
   const handleSaveMeal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentMess || !user) return;
+    if (memberIds.length === 0) {
+      setError("Please select at least one member.");
+      return;
+    }
     setSaving(true);
     setError(null);
 
@@ -97,9 +101,9 @@ export function Meals() {
       .eq('mess_id', currentMess.id);
 
     // 2. Perform the save
-    const { error: dbError } = await supabase.from('meals').upsert({
+    const inserts = memberIds.map(id => ({
       mess_id: currentMess.id,
-      member_id: memberId,
+      member_id: id,
       date: date,
       breakfast: parseFloat(breakfast) || 0,
       lunch: parseFloat(lunch) || 0,
@@ -108,7 +112,9 @@ export function Meals() {
       is_deleted: false,
       deleted_at: null,
       deleted_by: null
-    }, { onConflict: 'mess_id, member_id, date' });
+    }));
+
+    const { error: dbError } = await supabase.from('meals').upsert(inserts, { onConflict: 'mess_id, member_id, date' });
 
     if (dbError) {
       setError(dbError.message);
@@ -253,20 +259,47 @@ export function Meals() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="member">Member</Label>
-                      <select 
-                        id="member" 
-                        required 
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        value={memberId} 
-                        onChange={e => setMemberId(e.target.value)} 
-                        disabled={saving}
-                      >
-                        <option value="" disabled>Select a member</option>
+                      <div className="flex items-center justify-between">
+                        <Label>Members</Label>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-auto p-0 text-xs text-primary"
+                          onClick={() => {
+                            if (memberIds.length === members.length) {
+                              setMemberIds([]);
+                            } else {
+                              setMemberIds(members.map(m => m.user_id));
+                            }
+                          }}
+                        >
+                          {memberIds.length === members.length ? 'Deselect All' : 'Select All'}
+                        </Button>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto border border-input rounded-md bg-background p-3 space-y-3">
                         {members.map(m => (
-                          <option key={m.user_id} value={m.user_id}>{m.name}</option>
+                          <div key={m.user_id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`member-${m.user_id}`}
+                              checked={memberIds.includes(m.user_id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setMemberIds([...memberIds, m.user_id]);
+                                } else {
+                                  setMemberIds(memberIds.filter(id => id !== m.user_id));
+                                }
+                              }}
+                              disabled={saving}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label htmlFor={`member-${m.user_id}`} className="text-sm font-normal cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                              {m.name}
+                            </Label>
+                          </div>
                         ))}
-                      </select>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
