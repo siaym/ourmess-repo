@@ -5,11 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-
-const COLORS = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6'];
 
 const StatCard = ({ title, value, icon: Icon, trend, trendValue }: any) => (
   <Card className="bg-card/50 backdrop-blur-xl border-border/50">
@@ -32,7 +29,7 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue }: any) => (
 export function Dashboard() {
   const { currentMess, user } = useAuth();
   const [stats, setStats] = useState<any>(null);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [totalDeposits, setTotalDeposits] = useState<number>(0);
   const [activities, setActivities] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -57,24 +54,16 @@ export function Dashboard() {
       
       if (statsData) setStats(statsData);
 
-      // 2. Fetch Expenses for Chart
-      const { data: expData } = await supabase
-        .from('expenses')
-        .select('category, amount')
+      // 2. Fetch Total Deposits for Money in the Box
+      const { data: depData } = await supabase
+        .from('deposits')
+        .select('amount')
         .eq('mess_id', currentMess.id)
         .eq('is_deleted', false);
-        
-      if (expData && expData.length > 0) {
-        const categoryTotals = expData.reduce((acc: any, curr: any) => {
-          acc[curr.category] = (acc[curr.category] || 0) + Number(curr.amount);
-          return acc;
-        }, {});
-        
-        const cData = Object.keys(categoryTotals).map(key => ({
-          name: key,
-          value: categoryTotals[key]
-        }));
-        setChartData(cData);
+
+      if (depData) {
+        const sum = depData.reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
+        setTotalDeposits(sum);
       }
 
       // 3. Fetch Recent Activity
@@ -231,41 +220,134 @@ export function Dashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <motion.div variants={item} className="col-span-4">
-          <Card className="h-[400px] bg-card/50 backdrop-blur-xl border-border/50">
+          <Card className="h-[400px] bg-card/50 backdrop-blur-xl border-border/50 flex flex-col">
             <CardHeader>
-              <CardTitle>Expense Overview</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                💰 Money in the Box
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">Total Deposits − Total Expenses</p>
             </CardHeader>
-            <CardContent className="h-[320px]">
-              {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => `৳ ${value.toFixed(2)}`}
-                      contentStyle={{ backgroundColor: 'rgba(10, 10, 10, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                    />
-                    <Legend verticalAlign="bottom" height={36} />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Receipt className="w-12 h-12 mb-4 opacity-20" />
-                  <p>No expenses logged yet to chart.</p>
-                </div>
-              )}
+            <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+              {(() => {
+                const totalExpenses = stats ? Number(stats.total_expenses) : 0;
+                const balance = totalDeposits - totalExpenses;
+                const isPositive = balance >= 0;
+                // Fill level: clamp between 0–100%
+                const fillPct = totalDeposits > 0
+                  ? Math.min(100, Math.max(0, (balance / totalDeposits) * 100))
+                  : 0;
+
+                return (
+                  <>
+                    {/* Jar SVG */}
+                    <div className="relative w-36 h-48 select-none">
+                      <svg viewBox="0 0 120 160" className="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                        {/* Jar lid */}
+                        <rect x="30" y="4" width="60" height="14" rx="5"
+                          fill={isPositive ? '#6366f1' : '#ef4444'}
+                          opacity="0.9"
+                        />
+                        {/* Lid shine */}
+                        <rect x="34" y="7" width="52" height="4" rx="2" fill="white" opacity="0.25" />
+
+                        {/* Jar body clip */}
+                        <defs>
+                          <clipPath id="jarClip">
+                            <path d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z" />
+                          </clipPath>
+                          <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={isPositive ? '#818cf8' : '#f87171'} stopOpacity="0.95" />
+                            <stop offset="100%" stopColor={isPositive ? '#4f46e5' : '#dc2626'} stopOpacity="1" />
+                          </linearGradient>
+                          <linearGradient id="jarGlass" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="white" stopOpacity="0.12" />
+                            <stop offset="40%" stopColor="white" stopOpacity="0.04" />
+                            <stop offset="100%" stopColor="white" stopOpacity="0.08" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Jar body background */}
+                        <path
+                          d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z"
+                          fill="rgba(255,255,255,0.05)"
+                          stroke={isPositive ? 'rgba(99,102,241,0.5)' : 'rgba(239,68,68,0.5)'}
+                          strokeWidth="1.5"
+                        />
+
+                        {/* Liquid fill (bottom-anchored) */}
+                        <g clipPath="url(#jarClip)">
+                          <motion.rect
+                            x="14" width="92"
+                            y={152 - (132 * fillPct / 100)}
+                            height={132 * fillPct / 100}
+                            fill="url(#liquidGrad)"
+                            initial={{ height: 0, y: 152 }}
+                            animate={{
+                              height: 132 * fillPct / 100,
+                              y: 152 - (132 * fillPct / 100)
+                            }}
+                            transition={{ duration: 1.2, ease: 'easeOut' }}
+                          />
+                          {/* Wave effect on liquid surface */}
+                          {fillPct > 2 && (
+                            <motion.path
+                              d={`M14 ${152 - (132 * fillPct / 100)} Q40 ${152 - (132 * fillPct / 100) - 4} 60 ${152 - (132 * fillPct / 100)} Q80 ${152 - (132 * fillPct / 100) + 4} 106 ${152 - (132 * fillPct / 100)} L106 152 L14 152 Z`}
+                              fill="url(#liquidGrad)"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.8, duration: 0.4 }}
+                            />
+                          )}
+                        </g>
+
+                        {/* Glass shine overlay */}
+                        <path
+                          d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z"
+                          fill="url(#jarGlass)"
+                        />
+
+                        {/* Shine streak on jar side */}
+                        <path d="M22 30 Q20 80 21 140" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.15" />
+
+                        {/* % label inside jar */}
+                        <text
+                          x="60" y="96"
+                          textAnchor="middle"
+                          fontSize="16"
+                          fontWeight="bold"
+                          fill="white"
+                          opacity="0.9"
+                          style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}
+                        >
+                          {fillPct.toFixed(0)}%
+                        </text>
+                      </svg>
+                    </div>
+
+                    {/* Balance text */}
+                    <div className="text-center space-y-1">
+                      <p className={`text-3xl font-bold tracking-tight ${isPositive ? 'text-indigo-400' : 'text-red-400'}`}>
+                        ৳ {Math.abs(balance).toFixed(2)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {isPositive ? 'Available in box' : 'Box is in deficit'}
+                      </p>
+                    </div>
+
+                    {/* Breakdown pills */}
+                    <div className="flex gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                        Deposits: <strong className="text-foreground ml-1">৳ {totalDeposits.toFixed(2)}</strong>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                        Expenses: <strong className="text-foreground ml-1">৳ {totalExpenses.toFixed(2)}</strong>
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </motion.div>
