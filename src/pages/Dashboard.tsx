@@ -54,12 +54,13 @@ export function Dashboard() {
       
       if (statsData) setStats(statsData);
 
-      // 2. Fetch Total Deposits for Money in the Box
+      // 2. Fetch Total Deposits for Money in the Box (only real physical deposits, not carryover negatives)
       const { data: depData } = await supabase
         .from('deposits')
         .select('amount')
         .eq('mess_id', currentMess.id)
-        .eq('is_deleted', false);
+        .eq('is_deleted', false)
+        .gt('amount', 0);
 
       if (depData) {
         const sum = depData.reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
