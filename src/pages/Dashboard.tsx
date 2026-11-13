@@ -204,7 +204,7 @@ export function Dashboard() {
         )}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <motion.div variants={item}>
           <StatCard title="Total Members" value={stats?.total_members || '0'} icon={Users} trend="Live" trendValue="Active" />
         </motion.div>
@@ -219,21 +219,20 @@ export function Dashboard() {
         </motion.div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <motion.div variants={item} className="col-span-4">
-          <Card className="h-[400px] bg-card/50 backdrop-blur-xl border-border/50 flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <motion.div variants={item} className="lg:col-span-4">
+          <Card className="bg-card/50 backdrop-blur-xl border-border/50 flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 💰 Money in the Box
               </CardTitle>
               <p className="text-xs text-muted-foreground">Total Deposits − Total Expenses</p>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+            <CardContent className="flex flex-col items-center justify-center gap-3 py-4">
               {(() => {
                 const totalExpenses = stats ? Number(stats.total_expenses) : 0;
                 const balance = totalDeposits - totalExpenses;
                 const isPositive = balance >= 0;
-                // Fill level: clamp between 0–100%
                 const fillPct = totalDeposits > 0
                   ? Math.min(100, Math.max(0, (balance / totalDeposits) * 100))
                   : 0;
@@ -241,7 +240,7 @@ export function Dashboard() {
                 return (
                   <>
                     {/* Jar SVG */}
-                    <div className="relative w-36 h-48 select-none">
+                    <div className="relative w-28 h-36 sm:w-36 sm:h-48 select-none">
                       <svg viewBox="0 0 120 160" className="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
                         {/* Jar lid */}
                         <rect x="30" y="4" width="60" height="14" rx="5"
@@ -251,7 +250,6 @@ export function Dashboard() {
                         {/* Lid shine */}
                         <rect x="34" y="7" width="52" height="4" rx="2" fill="white" opacity="0.25" />
 
-                        {/* Jar body clip */}
                         <defs>
                           <clipPath id="jarClip">
                             <path d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z" />
@@ -267,7 +265,6 @@ export function Dashboard() {
                           </linearGradient>
                         </defs>
 
-                        {/* Jar body background */}
                         <path
                           d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z"
                           fill="rgba(255,255,255,0.05)"
@@ -275,7 +272,6 @@ export function Dashboard() {
                           strokeWidth="1.5"
                         />
 
-                        {/* Liquid fill (bottom-anchored) */}
                         <g clipPath="url(#jarClip)">
                           <motion.rect
                             x="14" width="92"
@@ -289,7 +285,6 @@ export function Dashboard() {
                             }}
                             transition={{ duration: 1.2, ease: 'easeOut' }}
                           />
-                          {/* Wave effect on liquid surface */}
                           {fillPct > 2 && (
                             <motion.path
                               d={`M14 ${152 - (132 * fillPct / 100)} Q40 ${152 - (132 * fillPct / 100) - 4} 60 ${152 - (132 * fillPct / 100)} Q80 ${152 - (132 * fillPct / 100) + 4} 106 ${152 - (132 * fillPct / 100)} L106 152 L14 152 Z`}
@@ -301,16 +296,11 @@ export function Dashboard() {
                           )}
                         </g>
 
-                        {/* Glass shine overlay */}
                         <path
                           d="M20 20 Q18 24 16 32 L14 140 Q14 150 24 152 L96 152 Q106 150 106 140 L104 32 Q102 24 100 20 Z"
                           fill="url(#jarGlass)"
                         />
-
-                        {/* Shine streak on jar side */}
                         <path d="M22 30 Q20 80 21 140" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.15" />
-
-                        {/* % label inside jar */}
                         <text
                           x="60" y="96"
                           textAnchor="middle"
@@ -318,7 +308,6 @@ export function Dashboard() {
                           fontWeight="bold"
                           fill="white"
                           opacity="0.9"
-                          style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}
                         >
                           {fillPct.toFixed(0)}%
                         </text>
@@ -326,8 +315,8 @@ export function Dashboard() {
                     </div>
 
                     {/* Balance text */}
-                    <div className="text-center space-y-1">
-                      <p className={`text-3xl font-bold tracking-tight ${isPositive ? 'text-indigo-400' : 'text-red-400'}`}>
+                    <div className="text-center space-y-0.5">
+                      <p className={`text-2xl sm:text-3xl font-bold tracking-tight ${isPositive ? 'text-indigo-400' : 'text-red-400'}`}>
                         ৳ {Math.abs(balance).toFixed(2)}
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -336,7 +325,7 @@ export function Dashboard() {
                     </div>
 
                     {/* Breakdown pills */}
-                    <div className="flex gap-4 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
                         Deposits: <strong className="text-foreground ml-1">৳ {totalDeposits.toFixed(2)}</strong>
@@ -352,20 +341,20 @@ export function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
-        <motion.div variants={item} className="col-span-3">
-          <Card className="h-[400px] bg-card/50 backdrop-blur-xl border-border/50 overflow-hidden flex flex-col">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
+        <motion.div variants={item} className="lg:col-span-3">
+          <Card className="bg-card/50 backdrop-blur-xl border-border/50 overflow-hidden flex flex-col" style={{ minHeight: '320px', maxHeight: '420px' }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base sm:text-lg">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {activities.length > 0 ? (
                   activities.map((activity) => {
                     const Icon = activity.icon;
                     return (
-                      <div key={activity.id} className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <Icon className="h-5 w-5 text-primary" />
+                      <div key={activity.id} className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{activity.text}</p>
@@ -378,7 +367,7 @@ export function Dashboard() {
                     );
                   })
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <p>No recent activity.</p>
                   </div>
                 )}
