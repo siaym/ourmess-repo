@@ -54,12 +54,13 @@ export function Dashboard() {
       
       if (statsData) setStats(statsData);
 
-      // 2. Fetch ALL deposits for Money in the Box (includes carryovers +/-, all dates)
+      // 2. Fetch ALL active deposits for Money in the Box (non-archived = current month + carryovers)
       const { data: depData } = await supabase
         .from('deposits')
         .select('amount')
         .eq('mess_id', currentMess.id)
-        .eq('is_deleted', false);
+        .eq('is_deleted', false)
+        .eq('is_archived', false);
 
       if (depData) {
         const sum = depData.reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
